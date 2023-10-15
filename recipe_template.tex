@@ -1,0 +1,37 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage{fontspec}
+\usepackage{multicol}
+
+% \usepackage[left=1.5in,right=1.5in,top=1in,bottom=1in]{geometry}
+\setmainfont[Scale=1.6,AutoFakeBold=1.5,AutoFakeSlant=0.4]{Doves Type}
+
+\title{Recipe Title}
+\author{Source \\ \small{ Source URL }}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Ingredients}
+\begin{multicols}{2}
+    \begin{itemize}
+        \item Ingredient 1
+        \item Ingredient 2
+        \item Ingredient 3
+    \end{itemize}
+    \columnbreak
+    \begin{itemize}
+        \item Ingredient 4
+        \item Ingredient 5
+        \item Ingredient 6
+    \end{itemize}
+\end{multicols}
+
+\section*{Directions}
+\begin{enumerate}
+    \item Step 1
+    \item Step 2
+    \item Step 3
+\end{enumerate}
+
+\end{document}
