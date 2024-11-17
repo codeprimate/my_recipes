@@ -9,8 +9,10 @@
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{} % Clear all header/footer fields
+\fancyhead[L]{ {{- title -}} } % Book title always on left
+\fancyhead[R]{\leftmark} % Chapter name always on right
 \fancyfoot[C]{\thepage} % Center page number in footer
-\renewcommand{\headrulewidth}{0pt} % Remove header rule
+\renewcommand{\headrulewidth}{0.4pt} % Add header rule
 \renewcommand{\footrulewidth}{0pt} % Remove footer rule
 
 {% for package in packages %}
@@ -44,11 +46,13 @@
 
 {% for section_name, recipes in sections.items() %}
 \chapter{ {{- section_name|upper -}} }
+\thispagestyle{empty}
+\markboth{ {{- section_name|upper -}} }{ {{- section_name|upper -}} }
 \vspace*{\fill}
 \hrulefill
 \vspace*{\fill}
 \newpage
-\thispagestyle{empty}
+\thispagestyle{fancy}
 {% for recipe in recipes %}
 \begin{center}
 \huge{ {{- recipe.title -}} } 

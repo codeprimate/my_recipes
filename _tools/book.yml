@@ -1,6 +1,6 @@
-title: "My Recipe Collection"
+title: "Patrick's Recipes"
 authorship:
-  author: "Your Name"
+  author: "Patrick Morgan"
   version: "2024 Edition"
   copyright: "2024"
 template: "book.tex.jinja"
