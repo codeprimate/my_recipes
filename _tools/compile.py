@@ -50,7 +50,8 @@ class BookCompiler:
         'fontspec',    # Font handling
         'geometry',    # Page layout
         'titlesec',    # Section formatting
-        'fancyhdr'     # Header/footer styling
+        'fancyhdr',    # Header/footer styling
+        'afterpage'    # For empty page handling (only used if twoside)
     }
     
     # Files generated during LaTeX compilation that should be cleaned up
@@ -235,7 +236,10 @@ class BookCompiler:
             'packages': self.metadata['packages'],
             
             # Organize recipes by section
-            'sections': {}
+            'sections': {},
+            
+            # Add twoside flag directly to template vars
+            'twoside': self.config['style'].get('twoside', False)
         }
         
         # Get ordered section names
