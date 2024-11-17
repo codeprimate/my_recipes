@@ -15,6 +15,8 @@ import zipfile
 import io
 import pickle
 from tqdm import tqdm
+import subprocess
+import sys
 
 @dataclass
 class CulinaryTerm:
@@ -58,13 +60,22 @@ class CulinaryDataManager:
     def __init__(self):
         """Initialize the manager and required NLP components."""
         self.terms: Dict[str, CulinaryTerm] = {}
-        self.nlp = spacy.load("en_core_web_sm")
+        
+        # Load spaCy model, downloading if needed
+        try:
+            self.nlp = spacy.load("en_core_web_sm")
+        except OSError:
+            print("Downloading required spaCy language model...")
+            subprocess.check_call([sys.executable, "-m", "spacy", "download", "en_core_web_sm"])
+            self.nlp = spacy.load("en_core_web_sm")
+                
         self.cache_file = Path("_build/culinary_data.pkl")
         
-        # Download required NLTK data
+        # Download required NLTK data if needed
         try:
             nltk.data.find('corpora/wordnet')
         except LookupError:
+            print("Downloading required NLTK data...")
             nltk.download('wordnet')
             nltk.download('omw-1.4')
 
@@ -74,23 +85,12 @@ class CulinaryDataManager:
             print("✓ Loaded cached culinary data")
             return
             
-        print("Building culinary data from sources...")
-        print("This may take a few minutes on first run.")
-        
-        with tqdm(total=4, desc="Loading data") as pbar:
-            self.load_usda_data()
-            pbar.update(1)
-            
-            self.load_wordnet_data()
-            pbar.update(1)
-            
-            pbar.set_description("Enhancing with NLP")
-            self.enhance_with_nlp()
-            pbar.update(1)
-            
-            pbar.set_description("Saving cache")
-            self._save_cached_data()
-            pbar.update(1)
+        print("Building culinary database...")
+        self.load_usda_data()
+        self.load_wordnet_data()
+        self.enhance_with_nlp()
+        self._save_cached_data()
+        print("✓ Build complete")
 
     def _load_cached_data(self) -> bool:
         """Load cached culinary data if available.
@@ -124,36 +124,22 @@ class CulinaryDataManager:
         USDA_URL = "https://fdc.nal.usda.gov/fdc-datasets/Foundation.csv.zip"
         
         try:
-            # Download and process USDA data
-            print("Downloading USDA data...")
-            response = requests.get(USDA_URL, stream=True)
-            total_size = int(response.headers.get('content-length', 0))
+            print("Downloading USDA database...")
+            response = requests.get(USDA_URL)
             
-            with tqdm(total=total_size, unit='B', unit_scale=True, desc="Downloading") as pbar:
-                chunks = []
-                for data in response.iter_content(chunk_size=4096):
-                    chunks.append(data)
-                    pbar.update(len(data))
-            
-            content = b''.join(chunks)
-            with zipfile.ZipFile(io.BytesIO(content)) as z:
+            with zipfile.ZipFile(io.BytesIO(response.content)) as z:
                 with z.open('food.csv') as f:
                     df = pd.read_csv(f)
-                    
-            # Process each food item with progress bar
+            
+            # Progress bar for long-running food processing
             for _, row in tqdm(df.iterrows(), total=len(df), desc="Processing USDA foods"):
                 name = row['description'].lower()
-                category = self._categorize_usda_food(row)
-                
-                # Create variations of the name
-                variations = self._generate_variations(name)
-                
                 self.terms[name] = CulinaryTerm(
                     name=name,
-                    category=category,
-                    variations=variations,
+                    category='ingredient',
+                    variations=self._generate_variations(name),
                     related_terms=[],
-                    confidence=0.9  # High confidence for USDA data
+                    confidence=0.9
                 )
                 
         except Exception as e:
@@ -163,14 +149,13 @@ class CulinaryDataManager:
 
     def load_wordnet_data(self):
         """Load culinary terms from WordNet lexical database."""
-        print("Processing WordNet terms...")
         synsets = [
             (wn.synset('food.n.01'), 'ingredient'),
             (wn.synset('cooking.n.01'), 'technique'),
             (wn.synset('utensil.n.01'), 'equipment')
         ]
         
-        for synset, category in tqdm(synsets, desc="Processing WordNet categories"):
+        for synset, category in tqdm(synsets, desc="Processing WordNet terms", ncols=80):
             self._process_synset_hierarchy(synset, category)
 
     def _process_synset_hierarchy(self, synset, category: str, depth: int = 3):
@@ -216,20 +201,17 @@ class CulinaryDataManager:
 
     def enhance_with_nlp(self):
         """Use spaCy to enhance term recognition and categorization."""
-        for term_name, term_data in tqdm(list(self.terms.items()), desc="Enhancing terms with NLP"):
+        # Progress bar for long-running NLP processing
+        for term_name, term_data in tqdm(self.terms.items(), desc="Enhancing terms with NLP"):
             doc = self.nlp(term_name)
             
-            # Get noun chunks and entities
             chunks = [chunk.text.lower() for chunk in doc.noun_chunks]
             entities = [ent.text.lower() for ent in doc.ents]
             
-            # Add any new variations found
             new_variations = set(chunks + entities) - {term_name}
             term_data.variations.extend(list(new_variations))
             
-            # Update confidence based on NLP analysis
             if doc.has_vector:
-                # Check similarity with category prototypes
                 category_confidence = self._calculate_category_confidence(doc)
                 term_data.confidence = (term_data.confidence + category_confidence) / 2
 

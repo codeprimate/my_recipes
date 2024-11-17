@@ -31,8 +31,8 @@ class RecipeExtractor:
     structure and updates metadata to track extraction status.
 
     Key Features:
-    - Extracts content between \\begin{document} and \\end{document}
-    - Identifies LaTeX package requirements from \\usepackage statements
+    - Extracts content between \begin{document} and \end{document}
+    - Identifies LaTeX package requirements from \usepackage statements
     - Maintains build directory structure for extracted content
     - Updates metadata with extraction results and package requirements
     - Tracks extraction errors for debugging
@@ -78,8 +78,8 @@ class RecipeExtractor:
         """Extract content and package requirements from a LaTeX recipe file.
 
         Processes a recipe file to extract:
-        1. Content between \\begin{document} and \\end{document} tags
-        2. Package requirements from \\usepackage statements
+        1. Content between \begin{document} and \end{document} tags
+        2. Package requirements from \usepackage statements
 
         Args:
             recipe_path: Path to LaTeX recipe file to process
@@ -103,7 +103,7 @@ class RecipeExtractor:
         for line in lines:
             # Look for package requirements
             if r'\usepackage' in line:
-                # Extract package name from \\usepackage{package_name}
+                # Extract package name from \usepackage{package_name}
                 package = line.split('{')[1].split('}')[0]
                 packages.add(package)
                 

@@ -16,13 +16,14 @@ The build system processes individual LaTeX recipe files into a cohesive book by
 ```
 .
 ├── _templates/          
-│   └── book.tex        # Single master template for book compilation
+│   └── misc.tex        # misc recipe templates
 ├── _tools/             
 │   ├── build.py        # Main entry point and orchestration
 │   ├── scan.py         # Directory/file scanner
 │   ├── extract.py      # Content/package extractor
 │   ├── preprocess.py   # Content normalizer
 │   ├── compile.py      # Book assembler
+│   ├── book.tex.jinja  # Master template (jinja2)
 │   └── book.yml        # Main configuration
 ├── _build/             # Build artifacts (git-ignored)
 │   ├── metadata.yml    # Build state tracking
