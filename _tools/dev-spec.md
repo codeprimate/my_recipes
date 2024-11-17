@@ -80,8 +80,8 @@ style:
     auto_fake_bold: 1.5
     auto_fake_slant: 0.3
 build:
-  source: ""
-  output_dir: "_build"
+  output_dir: "_build"  # Build directory for all artifacts
+latex_compiler: "xelatex"  # LaTeX compiler to use
 ```
 
 ### _build/metadata.yml
@@ -166,10 +166,12 @@ scan_errors:  # Tracks any errors during scanning
 ### 2. extract.py
 - Extracts content between \begin{document} and \end{document}
 - Identifies package requirements from \usepackage statements
+- Extracts recipe title from \title{} command if present
 - Updates metadata with:
   - List of required packages per recipe
   - Global consolidated package list
   - Path to extracted content file
+  - Recipe title
   - Extraction errors if any occur
 - Stores extracted content in _build/bodies/ maintaining source directory structure
 - Provides rich console output with extraction summary including:
@@ -177,14 +179,15 @@ scan_errors:  # Tracks any errors during scanning
   - Successfully processed count
   - Error count
   - Detailed tables showing:
-    - Recipe processing status
-    - Any errors encountered
+    - Recipe processing status by section
+    - Any errors encountered with type and message
 - Maintains metadata structure:
 ```yaml
 recipes:
   "path/to/recipe.tex":
     packages: []  # List of required packages
     extracted_body: "_build/bodies/path/to/recipe.tex"
+    title: "Recipe Title"  # Extracted from \title{} command
 packages: []  # Global consolidated package list
 extraction_errors:  # Tracks any errors during extraction
   - recipe: "path/to/recipe.tex"
@@ -200,9 +203,19 @@ extraction_errors:  # Tracks any errors during extraction
 
 ### 4. compile.py
 - Reads master template from `_tools/book.tex.jinja`
-- Integrates all required packages
-- Includes preprocessed content
-- Generates final book
+- Validates build state and dependencies
+- Consolidates required LaTeX packages
+- Renders template with:
+  - Book metadata (title, author, etc)
+  - Style configuration
+  - Recipe content by section
+- Generates index if configured
+- Runs specified LaTeX compiler
+- Provides detailed compilation summary including:
+  - Recipe inclusion status
+  - Package usage
+  - Compilation errors
+  - Output file location
 
 ### build.py
 - Main entry point
@@ -212,24 +225,25 @@ extraction_errors:  # Tracks any errors during extraction
 
 ## Development Guidelines
 
-1. Each script should be independently runnable
+1. Each script should be independently runnable with command-line arguments
 2. Scripts should update metadata.yml with their state
 3. Build process should be incremental (only process changed files)
 4. All build artifacts go in _build directory
 5. Source files remain unchanged
 6. Error handling should be clear and actionable
+7. Rich console output should provide clear status and error information
 
 ## Usage
 
 Basic build:
 ```bash
-python _tools/build.py
+python _tools/build.py [--config path/to/config] [--build-dir path/to/build]
 ```
 
 Individual steps can be run for development:
 ```bash
-python _tools/scan.py
-python _tools/extract.py
-python _tools/preprocess.py
-python _tools/compile.py
+python _tools/scan.py [--config path/to/config] [--build-dir path/to/build]
+python _tools/extract.py [--config path/to/config] [--build-dir path/to/build]
+python _tools/preprocess.py [--config path/to/config] [--build-dir path/to/build]
+python _tools/compile.py [--config path/to/config] [--build-dir path/to/build]
 ```

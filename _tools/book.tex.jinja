@@ -53,6 +53,7 @@
 \vspace*{\fill}
 \newpage
 \thispagestyle{fancy}
+
 {% for recipe in recipes %}
 \begin{center}
 \huge{ {{- recipe.title -}} } 
@@ -63,8 +64,9 @@
 \vspace*{\fill}
 \hrulefill
 \vspace*{\fill}
-\newpage 
+\newpage
 {% endfor %}
+
 {% endfor %}
 
 % Index

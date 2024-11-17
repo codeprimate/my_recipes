@@ -244,10 +244,7 @@ class CookbookIndexer:
         4. Create index entries while avoiding overlaps
         5. Preserve original LaTeX formatting
         """
-        # Skip processing of LaTeX commands and comments
-        if line.strip().startswith('\\') or line.strip().startswith('%'):
-            return line
-        
+
         # Clean the line before matching
         clean_line = self._clean_latex(line)
         

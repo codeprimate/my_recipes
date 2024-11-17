@@ -38,6 +38,20 @@ class CulinaryTerm:
     related_terms: List[str]
     confidence: float = 1.0
 
+    def __lt__(self, other):
+        """Enable sorting by name"""
+        if isinstance(other, (float, int)):
+            return False
+        if isinstance(other, CulinaryTerm):
+            return self.name < other.name
+        return NotImplemented
+
+    def __eq__(self, other):
+        """Enable equality comparison"""
+        if isinstance(other, CulinaryTerm):
+            return self.name == other.name
+        return NotImplemented
+
 class CulinaryDataManager:
     """Manages comprehensive culinary terminology data from multiple sources.
     
@@ -61,13 +75,13 @@ class CulinaryDataManager:
         """Initialize the manager and required NLP components."""
         self.terms: Dict[str, CulinaryTerm] = {}
         
-        # Load spaCy model, downloading if needed
+        # Load larger spaCy model with word vectors
         try:
-            self.nlp = spacy.load("en_core_web_sm")
+            self.nlp = spacy.load("en_core_web_md")
         except OSError:
             print("Downloading required spaCy language model...")
-            subprocess.check_call([sys.executable, "-m", "spacy", "download", "en_core_web_sm"])
-            self.nlp = spacy.load("en_core_web_sm")
+            subprocess.check_call([sys.executable, "-m", "spacy", "download", "en_core_web_md"])
+            self.nlp = spacy.load("en_core_web_md")
                 
         self.cache_file = Path("_build/culinary_data.pkl")
         
@@ -121,7 +135,7 @@ class CulinaryDataManager:
 
     def load_usda_data(self):
         """Load and process the USDA food database."""
-        USDA_URL = "https://fdc.nal.usda.gov/fdc-datasets/Foundation.csv.zip"
+        USDA_URL = "https://fdc.nal.usda.gov/portal-data/external/foundationDownload"
         
         try:
             print("Downloading USDA database...")
@@ -375,35 +389,74 @@ class CulinaryDataManager:
                 confidence=1.0
             )
 
-    def get_term_matches(self, text: str) -> List[Tuple[str, float]]:
-        """Find all matching culinary terms in text with confidence scores.
-        
-        Identifies culinary terms and their variations within the input text,
-        calculating confidence scores based on match type and term data.
+    def get_term_matches(self, text: str) -> List[Tuple[str, CulinaryTerm]]:
+        """Find all matching culinary terms in text with their full term data.
         
         Args:
             text: Input text to search for culinary terms
             
         Returns:
-            List of tuples containing (term_name, confidence_score)
-            
-        Note:
-            Variations of terms receive slightly lower confidence (0.9x)
+            List of tuples containing (term_name, term_data)
         """
         matches = []
-        doc = self.nlp(text.lower())
+        text = text.lower()
         
         # Check each term and its variations
         for term_name, term_data in self.terms.items():
             all_forms = [term_name] + term_data.variations
             for form in all_forms:
-                if form in text.lower():
-                    matches.append((
-                        term_name,
-                        term_data.confidence * (1.0 if form == term_name else 0.9)
-                    ))
+                if form in text:
+                    matches.append((term_name, term_data))
+                    break  # Found a match for this term, no need to check other variations
                     
         return matches
+
+    def get_recipe_index_data(self, recipe_text: str) -> Dict[str, List[CulinaryTerm]]:
+        """Analyze recipe text and return categorized culinary terms."""
+        # Debug output
+        print("\nDEBUG: Recipe Text Analysis")
+        print("-" * 50)
+        print("Original text snippet (first 200 chars):")
+        print(recipe_text[:200])
+        
+        # Clean tex commands and formatting before matching
+        cleaned_text = self._clean_tex_content(recipe_text)
+        print("\nCleaned text snippet (first 200 chars):")
+        print(cleaned_text[:200])
+        
+        matches = self.get_term_matches(cleaned_text)
+        print("\nFound terms:")
+        for term_name, term_data in matches:
+            print(f"- {term_name} ({term_data.category}) [confidence: {term_data.confidence:.2f}]")
+        
+        # Group matches by category
+        categorized = defaultdict(list)
+        for term_name, term_data in matches:
+            categorized[term_data.category].append(term_data)
+        
+        print("\nCategorized terms:")
+        for category, terms in categorized.items():
+            print(f"{category}: {[term.name for term in terms]}")
+            
+        return dict(categorized)
+
+    def _clean_tex_content(self, tex_content: str) -> str:
+        """Clean LaTeX commands and formatting from text.
+        
+        Args:
+            tex_content: Raw LaTeX content
+            
+        Returns:
+            Cleaned text suitable for term matching
+        """
+        # Remove LaTeX commands
+        cleaned = re.sub(r'\\[a-zA-Z]+(\[.*?\])?{', ' ', tex_content)
+        cleaned = re.sub(r'}', ' ', cleaned)
+        # Remove special LaTeX characters
+        cleaned = re.sub(r'[\\{}$&#^_~%]', ' ', cleaned)
+        # Normalize whitespace
+        cleaned = ' '.join(cleaned.split())
+        return cleaned.lower()
 
 def demo_usage():
     """Demonstrate usage of the CulinaryDataManager"""

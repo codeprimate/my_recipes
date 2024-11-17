@@ -156,39 +156,19 @@ class RecipeScanner:
             for recipe_file in section_path.glob('*.tex'):
                 relative_path = str(recipe_file.relative_to('.'))
                 
-                # Store extracted_body path WITHOUT _build prefix
-                extracted_body = f"bodies/{section_dir}/{recipe_file.name}"
-                
                 recipes[relative_path] = {
                     'section': section_dir,
                     'mtime': datetime.fromtimestamp(recipe_file.stat().st_mtime).isoformat(),
                     'title': recipe_file.stem.replace('_', ' ').title(),
                     'packages': [],
-                    'extracted_body': extracted_body,  # Path relative to build directory
+                    'extracted_body': False,
                     'preprocessed': False
                 }
         
         return recipes
 
     def detect_changes(self, existing_metadata: dict, new_files: Dict[str, dict]) -> Dict[str, dict]:
-        """Compare current scan against previous build to detect changes
-        
-        Changes are detected by:
-        - Comparing file modification times
-        - Checking for new files
-        - Checking for deleted files
-        
-        Args:
-            existing_metadata: Previous build metadata
-            new_files: Currently scanned files and metadata
-            
-        Returns:
-            Dict[str, dict]: Updated recipe metadata with change flags
-            
-        Side Effects:
-            - Resets preprocessing flags for changed files
-            - Updates extracted_body status for changed files
-        """
+        """Compare current scan against previous build to detect changes"""
         updated = {}
         existing_recipes = existing_metadata.get('recipes', {})
         
@@ -197,20 +177,23 @@ class RecipeScanner:
             
             # Check if file existed in previous build
             if path in existing_recipes:
-                old_mtime = existing_recipes[path].get('mtime')
-                new_mtime = metadata.get('mtime')
+                old_mtime = datetime.fromisoformat(existing_recipes[path].get('mtime', ''))
+                new_mtime = datetime.fromisoformat(metadata.get('mtime', ''))
                 changed = old_mtime != new_mtime
+                
+                if not changed:
+                    # Preserve existing preprocessing state for unchanged files
+                    updated[path]['preprocessed'] = existing_recipes[path].get('preprocessed', False)
             else:
                 # New file, mark as changed
                 changed = True
             
             updated[path]['changed'] = changed
             
-            # Reset preprocessing flags if changed
+            # Reset preprocessing flag if changed
             if changed:
                 updated[path]['preprocessed'] = False
-                updated[path]['extracted_body'] = False
-            
+        
         return updated
 
     def update_metadata(self, sections: Dict[str, str], recipes: Dict[str, dict]) -> dict:
@@ -366,7 +349,7 @@ def main():
             build_dir=args.build_dir
         )
         
-        print("Scanning for recipes...")
+        print("* Scanning for recipes...")
         metadata = scanner.scan()
         print_scan_summary(metadata)
         
