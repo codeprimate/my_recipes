@@ -31,15 +31,25 @@ Returns:
 
 Example metadata.yml structure:
     last_build: "2024-03-16T15:30:00Z"
+    packages:
+        - tocloft
+        - geometry
+        - fontspec
+        - multicol
     recipes:
-        "appetizers/bruschetta.tex":
-            section: "appetizers"
+        "desserts/chocolate_cake.tex":
+            section: "desserts"
             mtime: "2024-03-15T10:20:00Z"
-            title: "Bruschetta"
+            title: "Chocolate Cake"
+            packages:
+                - tocloft
+                - fontspec
+            extracted_body: "_build/bodies/desserts/chocolate_cake.tex"
             preprocessed: false
+            changed: false
     sections:
-        "appetizers": "Appetizers"
-        "main-dishes": "Main Dishes"
+        "desserts": "Desserts"
+        "entrees": "Entrees"
 """
 
 import os
@@ -150,10 +160,17 @@ class RecipeScanner:
             if path in existing_recipes:
                 old_mtime = existing_recipes[path].get('mtime')
                 new_mtime = metadata.get('mtime')
-                updated[path]['changed'] = old_mtime != new_mtime
+                changed = old_mtime != new_mtime
             else:
                 # New file, mark as changed
-                updated[path]['changed'] = True
+                changed = True
+            
+            updated[path]['changed'] = changed
+            
+            # Reset preprocessing flags if changed
+            if changed:
+                updated[path]['preprocessed'] = False
+                updated[path]['extracted_body'] = False
             
         return updated
 

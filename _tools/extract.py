@@ -166,9 +166,12 @@ class RecipeExtractor:
         for recipe_path, recipe_data in self.metadata['recipes'].items():
             # Check if extraction is needed
             needs_extraction = (
-                'extracted_body' not in recipe_data or  # Never extracted
-                not recipe_data['extracted_body'] or    # Empty path
-                not Path(recipe_data['extracted_body']).exists()  # File missing
+                recipe_data.get('changed', False) and  # Only extract if changed is true
+                (
+                    'extracted_body' not in recipe_data or  # Never extracted
+                    not recipe_data['extracted_body'] or    # Empty path
+                    not Path(recipe_data['extracted_body']).exists()  # File missing
+                )
             )
 
             if needs_extraction:
