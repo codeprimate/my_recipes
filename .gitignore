@@ -4,4 +4,3 @@
 *.gz
 *.swp
 _build/
-_tools/book.yml
