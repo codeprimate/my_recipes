@@ -59,6 +59,7 @@ class BookCompiler:
         '.log',  # Compilation log
         '.toc',  # Table of contents
         '.out'   # Hyperref output
+        '.sty'
     ]
 
     def __init__(self, config_path: Path, metadata_path: Path):
@@ -288,6 +289,11 @@ class BookCompiler:
         compiler = self.config.get('latex_compiler', 'xelatex')
         
         try:
+            # Create empty filename.sty file to prevent LaTeX error
+            style_file = self.build_dir / 'filename.sty'
+            if not style_file.exists():
+                style_file.touch()
+            
             # Run compiler twice for TOC/references
             for run in range(2):
                 logging.info(f"LaTeX compilation run {run + 1}/2")
