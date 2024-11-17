@@ -133,13 +133,15 @@ class BookCompiler:
                     })
                     continue
                 
-                body_path = Path(recipe.get('extracted_body', ''))
-                if not body_path.exists():
-                    self.errors.append({
-                        'phase': 'validation',
-                        'recipe': recipe_path,
-                        'error': f'Preprocessed file missing: {body_path}'
-                    })
+                # Check if preprocessed file exists using build_dir
+                if 'extracted_body' in recipe:
+                    body_path = self.build_dir / recipe['extracted_body']
+                    if not body_path.exists():
+                        self.errors.append({
+                            'phase': 'validation',
+                            'recipe': recipe_path,
+                            'error': f'Preprocessed file missing: {recipe["extracted_body"]}'
+                        })
             except (ValueError, TypeError) as e:
                 self.errors.append({
                     'phase': 'validation',
@@ -297,6 +299,7 @@ class BookCompiler:
                 )
                 
                 if result.returncode != 0:
+                    error_message = result.stderr if result.stderr else "LaTeX compilation failed"
                     self.errors.append({
                         'phase': 'latex',
                         'error': error_message
