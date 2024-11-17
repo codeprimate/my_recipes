@@ -44,7 +44,7 @@ class BookCompiler:
     - Compilation stops on critical errors
     """
     
-    # Add docstrings to class-level constants
+    # LaTeX packages required for basic book functionality
     REQUIRED_PACKAGES = {
         'fontspec',    # Font handling
         'geometry',    # Page layout
@@ -52,6 +52,7 @@ class BookCompiler:
         'fancyhdr'     # Header/footer styling
     }
     
+    # Files generated during LaTeX compilation that should be cleaned up
     AUXILIARY_EXTENSIONS = [
         '.aux',  # LaTeX auxiliary data
         '.log',  # Compilation log
@@ -65,6 +66,11 @@ class BookCompiler:
         Args:
             config_path: Path to book.yml configuration
             metadata_path: Path to build metadata
+            
+        The compiler requires both configuration and metadata to:
+        - Load book settings and style preferences
+        - Track build state and recipe processing status
+        - Maintain consistent output locations
         """
         self.config = load_config(config_path)
         self.metadata = load_metadata(metadata_path)
@@ -338,7 +344,19 @@ class BookCompiler:
             raise
 
 def main():
-    """Main entry point for compilation"""
+    """Main entry point for compilation
+    
+    Executes the full compilation pipeline:
+    1. Loads configuration and metadata
+    2. Initializes BookCompiler
+    3. Runs compilation process
+    4. Generates summary output
+    5. Handles any errors
+    
+    Exit codes:
+    - 0: Successful compilation
+    - 1: Compilation failed
+    """
     logging.basicConfig(level=logging.INFO)
     
     config_path = Path('_tools/book.yml')

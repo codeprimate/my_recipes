@@ -63,6 +63,20 @@ from rich.console import Console
 from rich.table import Table
 
 class RecipeScanner:
+    """Handles recipe book content scanning and metadata generation
+    
+    The scanner performs these key steps:
+    1. Discovers content directories (sections)
+    2. Scans for recipe files within sections
+    3. Detects changes from previous build
+    4. Updates build metadata
+    
+    Error Handling:
+    - All errors are collected in self.errors list
+    - Each error includes section, error message, and error type
+    - Scanning continues even if errors occur
+    """
+
     def __init__(self, config_path: str = "book.yml", build_dir: str = "_build"):
         """Initialize scanner with configuration
         Args:
@@ -82,9 +96,19 @@ class RecipeScanner:
         self.errors = []  # Add error tracking
 
     def scan_content_directories(self) -> Dict[str, str]:
-        """Scan for content directories, excluding system dirs
+        """Scan for content directories and process section names
+        
+        Discovers directories that:
+        - Are not hidden (don't start with '.')
+        - Are not system directories (don't start with '_')
+        - Exist in the project root
+        
         Returns:
-            Dict mapping directory paths to processed section names
+            Dict[str, str]: Mapping of directory paths to formatted section titles
+            
+        Example:
+            "01-appetizers" -> "Appetizers"
+            "main_dishes" -> "Main Dishes"
         """
         sections = {}
         content_dir = Path('.')  # Start from current directory
@@ -143,12 +167,23 @@ class RecipeScanner:
         return recipes
 
     def detect_changes(self, existing_metadata: dict, new_files: Dict[str, dict]) -> Dict[str, dict]:
-        """Compare against previous build to detect changes
+        """Compare current scan against previous build to detect changes
+        
+        Changes are detected by:
+        - Comparing file modification times
+        - Checking for new files
+        - Checking for deleted files
+        
         Args:
             existing_metadata: Previous build metadata
-            new_files: Newly scanned files
+            new_files: Currently scanned files and metadata
+            
         Returns:
-            Updated recipe metadata with change flags
+            Dict[str, dict]: Updated recipe metadata with change flags
+            
+        Side Effects:
+            - Resets preprocessing flags for changed files
+            - Updates extracted_body status for changed files
         """
         updated = {}
         existing_recipes = existing_metadata.get('recipes', {})
@@ -176,11 +211,22 @@ class RecipeScanner:
 
     def update_metadata(self, sections: Dict[str, str], recipes: Dict[str, dict]) -> dict:
         """Update and save build metadata
+        
+        Updates:
+        - Section directory mapping
+        - Recipe metadata
+        - Last build timestamp
+        - Error tracking
+        
         Args:
             sections: Section directory mapping
             recipes: Recipe metadata
+            
         Returns:
-            Complete updated metadata
+            dict: Complete updated metadata
+            
+        Side Effects:
+            Writes updated metadata to self.metadata_path
         """
         metadata = load_metadata(self.metadata_path)
         
