@@ -69,12 +69,14 @@
 
 {% for section_name, recipes in sections.items() %}
 \chapter{ {{- section_name|upper -}} }
-\thispagestyle{empty}
+\thispagestyle{plain}
 \markboth{ {{- section_name|upper -}} }{ {{- section_name|upper -}} }
+
 \vspace*{\fill}
 \hrulefill
 \vspace*{\fill}
 \newpage
+
 \thispagestyle{fancy}
 
 {% for recipe in recipes %}
@@ -82,8 +84,10 @@
 \huge{ {{- recipe.title -}} } 
 \normalsize
 \end{center}
+
 \addcontentsline{toc}{section}{ {{- recipe.title -}} }
 \input{ {{- recipe.extracted_body -}} }
+
 \vspace*{\fill}
 \hrulefill
 \vspace*{\fill}
@@ -92,7 +96,9 @@
 
 {% endfor %}
 
+{% if index %}
 % Index
 \printindex
+{% endif %}
 
 \end{document} 
