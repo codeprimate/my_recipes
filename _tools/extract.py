@@ -31,8 +31,8 @@ class RecipeExtractor:
     structure and updates metadata to track extraction status.
 
     Key Features:
-    - Extracts content between \begin{document} and \end{document}
-    - Identifies LaTeX package requirements from \usepackage statements
+    - Extracts content between begin{document} and end{document}
+    - Identifies LaTeX package requirements from usepackage statements
     - Maintains build directory structure for extracted content
     - Updates metadata with extraction results and package requirements
     - Tracks extraction errors for debugging
@@ -78,8 +78,8 @@ class RecipeExtractor:
         """Extract content and package requirements from a LaTeX recipe file.
 
         Processes a recipe file to extract:
-        1. Content between \begin{document} and \end{document} tags
-        2. Package requirements from \usepackage statements
+        1. Content between begin{document} and end{document} tags
+        2. Package requirements from usepackage statements
 
         Args:
             recipe_path: Path to LaTeX recipe file to process
@@ -212,12 +212,10 @@ class RecipeExtractor:
         for recipe_path, recipe_data in self.metadata['recipes'].items():
             # Check if extraction is needed
             needs_extraction = (
-                recipe_data.get('changed', False) and  # Only extract if changed is true
-                (
-                    'extracted_body' not in recipe_data or  # Never extracted
-                    not recipe_data['extracted_body'] or    # Empty path
-                    not Path(recipe_data['extracted_body']).exists()  # File missing
-                )
+                recipe_data.get('changed', False) or  # Extract if changed
+                'extracted_body' not in recipe_data or  # Never extracted
+                not recipe_data.get('extracted_body') or  # Empty path
+                not Path(str(recipe_data.get('extracted_body', ''))).exists()  # File missing
             )
 
             if needs_extraction:
@@ -312,6 +310,7 @@ def main():
             build_dir=args.build_dir
         )
         
+        print("Extracting recipe content...")
         metadata = extractor.extract_all()
         print_extraction_summary(metadata)
 

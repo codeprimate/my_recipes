@@ -370,6 +370,7 @@ def main():
             build_dir=args.build_dir
         )
         
+        print("Scanning for recipes...")
         metadata = scanner.scan()
         print_scan_summary(metadata)
         
