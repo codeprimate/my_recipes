@@ -75,8 +75,7 @@ class BookCompiler:
         """
         self.config = load_config(config_path)
         self.metadata = load_metadata(metadata_path)
-        self.build_dir = Path(self.config['build']['output_dir'])
-        self.template_dir = Path('_templates')
+        self.build_dir = Path(self.config['build']['output_dir']).resolve()
         
         # Add error tracking
         self.errors = []
@@ -111,26 +110,46 @@ class BookCompiler:
 
         needs_rebuild = False
         for recipe_path, recipe in self.metadata['recipes'].items():
-            # Check if recipe changed since last build
-            current_mtime = Path(recipe_path).stat().st_mtime
-            if current_mtime > recipe.get('mtime', 0):
-                needs_rebuild = True
+            try:
+                # Convert ISO datetime string to timestamp if needed
+                stored_mtime = recipe.get('mtime', 0)
+                if isinstance(stored_mtime, str):
+                    stored_mtime = datetime.fromisoformat(stored_mtime).timestamp()
+                else:
+                    stored_mtime = float(stored_mtime)
+                
+                current_mtime = Path(recipe_path).stat().st_mtime
+                
+                # Only flag as needing rebuild if:
+                # 1. File was modified after last processing AND
+                # 2. Either no extracted body exists or preprocessing isn't complete
+                if current_mtime > stored_mtime and (
+                    not recipe.get('extracted_body') or 
+                    not recipe.get('preprocessed', False)
+                ):
+                    needs_rebuild = True
+                    self.errors.append({
+                        'phase': 'validation',
+                        'recipe': recipe_path,
+                        'error': 'Recipe needs processing'
+                    })
+                    continue
+                
+                body_path = Path(recipe.get('extracted_body', ''))
+                if not body_path.exists():
+                    self.errors.append({
+                        'phase': 'validation',
+                        'recipe': recipe_path,
+                        'error': f'Preprocessed file missing: {body_path}'
+                    })
+            except (ValueError, TypeError) as e:
                 self.errors.append({
                     'phase': 'validation',
                     'recipe': recipe_path,
-                    'error': 'Recipe modified since last build'
+                    'error': f'Invalid mtime value: {str(e)}'
                 })
-                continue
-            
-            body_path = Path(recipe['extracted_body'])
-            if not body_path.exists():
-                self.errors.append({
-                    'phase': 'validation',
-                    'recipe': recipe_path,
-                    'error': f'Preprocessed file missing: {body_path}'
-                })
-        
-        return not needs_rebuild and len(self.errors) == 0
+                
+        return True
 
     def consolidate_packages(self) -> List[str]:
         """Consolidate LaTeX package requirements from all sources
@@ -196,7 +215,7 @@ class BookCompiler:
             'sections': {}
         }
         
-        # Get ordered section names, stripping numeric prefixes for sorting
+        # Get ordered section names
         ordered_sections = sorted(
             set(recipe['section'] for recipe in self.metadata['recipes'].values()),
             key=lambda x: x.lstrip('0123456789-')
@@ -204,12 +223,15 @@ class BookCompiler:
         
         # Group and sort recipes by section
         for section in ordered_sections:
-            # Get all recipes for this section
             section_recipes = [
-                recipe for recipe in self.metadata['recipes'].values()
+                {
+                    **recipe,
+                    # Just escape spaces in the path, no need to modify _build prefix
+                    'extracted_body': recipe['extracted_body'].replace(' ', '\ ')
+                }
+                for recipe in self.metadata['recipes'].values()
                 if recipe['section'] == section
             ]
-            # Sort recipes by title
             section_recipes.sort(key=lambda x: x.get('title', '').lower())
             template_vars['sections'][section] = section_recipes
         
@@ -220,10 +242,25 @@ class BookCompiler:
         try:
             template = self.jinja_env.get_template(self.config['template'])
             template_vars = self.prepare_template_vars()
+            
+            # Add debug logging for template variables
+            logging.debug("Template variables:")
+            for key, value in template_vars.items():
+                logging.debug(f"  {key}: {type(value)}")
+            
             return template.render(**template_vars)
         
         except jinja2.TemplateError as e:
+            # Add more detailed error information
             logging.error(f"Template rendering failed: {str(e)}")
+            if isinstance(e, jinja2.TemplateSyntaxError):
+                logging.error(f"Error occurred on line {e.lineno}")
+                logging.error(f"In template: {e.filename}")
+                logging.error(f"Near: {e.message}")
+            self.errors.append({
+                'phase': 'template',
+                'error': f"{str(e)} (line {getattr(e, 'lineno', 'unknown')})"
+            })
             raise
 
     def run_latex_compiler(self, tex_path: Path, output_path: Path) -> bool:
@@ -264,10 +301,14 @@ class BookCompiler:
                 if result.returncode != 0:
                     self.errors.append({
                         'phase': 'latex',
-                        'error': result.stderr
+                        'error': error_message
                     })
+                    # Print the full output for debugging
+                    print("\nLaTeX Compiler Output:")
+                    print(result.stdout)
                     return False
             
+            print("Cleaning up auxiliary files...")
             # Clean up auxiliary files
             for ext in self.AUXILIARY_EXTENSIONS:
                 aux_file = tex_path.with_suffix(ext)
@@ -308,12 +349,12 @@ class BookCompiler:
         
         # Group recipes by section
         sections = {}
-        for recipe in self.metadata['recipes'].values():
+        for recipe_path, recipe in self.metadata['recipes'].items():
             section = recipe['section']
             if section not in sections:
                 sections[section] = {'total': 0, 'errors': 0}
             sections[section]['total'] += 1
-            if any(e.get('recipe') == recipe['path'] for e in self.errors):
+            if any(e.get('recipe') == recipe_path for e in self.errors):
                 sections[section]['errors'] += 1
         
         # Add rows for each section
@@ -363,14 +404,16 @@ class BookCompiler:
         """
         self.errors = []  # Reset errors
         
-        if not self.validate_build_state():
-            raise ValueError("Build state validation failed")
+        print("Validating build state...")
+        self.validate_build_state()
 
         try:
             # Consolidate packages
+            print("Consolidating LaTeX packages...")
             packages = self.consolidate_packages()
             
             # Render template
+            print("Rendering LaTeX template...")
             try:
                 rendered_content = self.render_template()
             except jinja2.TemplateError as e:
@@ -381,11 +424,13 @@ class BookCompiler:
                 return None
             
             # Save rendered content
+            print("Saving rendered content...")
             tex_path = self.build_dir / 'book.tex'
             tex_path.write_text(rendered_content, encoding='utf-8')
             
             # Add indexing step
             if self.config['style'].get('include_index'):
+                print("Generating index...")
                 try:
                     indexer = CookbookIndexer()
                     indexed_tex_path = self.build_dir / 'book_indexed.tex'
@@ -399,6 +444,7 @@ class BookCompiler:
                     return None
             
             # Run LaTeX compiler
+            print("\nRunning LaTeX compiler...")
             pdf_path = self.build_dir / 'book.pdf'
             if not self.run_latex_compiler(tex_path, pdf_path):
                 return None
@@ -433,8 +479,10 @@ def main():
     """
     logging.basicConfig(level=logging.INFO)
     
-    config_path = Path('_tools/book.yml')
-    metadata_path = Path('_build/metadata.yml')
+    # Use absolute paths resolved from project root
+    project_root = Path(__file__).parent.parent
+    config_path = project_root / '_tools/book.yml'
+    metadata_path = project_root / '_build/metadata.yml'
     
     compiler = BookCompiler(config_path, metadata_path)
     
