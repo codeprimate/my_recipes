@@ -26,6 +26,7 @@ from rich.console import Console
 from rich.table import Table
 
 from helpers import load_config, load_metadata
+from indexer import CookbookIndexer
 
 class BookCompiler:
     """Handles recipe book compilation process
@@ -225,17 +226,17 @@ class BookCompiler:
             logging.error(f"Template rendering failed: {str(e)}")
             raise
 
-    def run_latex_compiler(self, output_path: Path) -> bool:
+    def run_latex_compiler(self, tex_path: Path, output_path: Path) -> bool:
         """Run LaTeX compiler
         
         Args:
+            tex_path: Path to the LaTeX source file to compile
             output_path: Path where the final PDF should be saved
         
         Returns:
             bool: True if compilation succeeded
         """
         compiler = self.config.get('latex_compiler', 'xelatex')
-        tex_path = self.build_dir / 'book.tex'
         
         try:
             # Run compiler twice for TOC/references
@@ -329,9 +330,23 @@ class BookCompiler:
             tex_path = self.build_dir / 'book.tex'
             tex_path.write_text(rendered_content, encoding='utf-8')
             
+            # Add indexing step
+            if self.config['style'].get('include_index'):
+                try:
+                    indexer = CookbookIndexer()
+                    indexed_tex_path = self.build_dir / 'book_indexed.tex'
+                    indexer.process_cookbook(tex_path, indexed_tex_path)
+                    tex_path = indexed_tex_path  # Use indexed version for compilation
+                except Exception as e:
+                    self.errors.append({
+                        'phase': 'indexing',
+                        'error': str(e)
+                    })
+                    return None
+            
             # Run LaTeX compiler
             pdf_path = self.build_dir / 'book.pdf'
-            if not self.run_latex_compiler(pdf_path):
+            if not self.run_latex_compiler(tex_path, pdf_path):
                 return None
             
             return pdf_path
