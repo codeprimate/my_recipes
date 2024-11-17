@@ -1,0 +1,26 @@
+title: "My Recipe Collection"
+authorship:
+  author: "Your Name"
+  version: "2024 Edition"
+  copyright: "2024"
+template: "_templates/book_template.tex"
+style:
+  documentclass: "article"
+  size: "letterpaper"
+  base_font_size: "11pt"
+  twoside: true
+  include_toc: true
+  include_index: false
+  geometry:
+    top: 1in
+    bottom: 1in
+    left: 1.4in
+    right: 1.5in
+  font:
+    family: "Times New Roman"  # Using a common font instead of Doves Type
+    scale: 1.2
+    auto_fake_bold: 1.5
+    auto_fake_slant: 0.3
+build:
+  source: ""  # Empty string means current directory
+  output_dir: "_build" 
