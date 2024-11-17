@@ -48,6 +48,9 @@ import yaml
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+from helpers import load_config, load_metadata
+from rich.console import Console
+from rich.table import Table
 
 class RecipeScanner:
     def __init__(self, config_path: str = "book.yml", build_dir: str = "_build"):
@@ -61,56 +64,12 @@ class RecipeScanner:
         self.metadata_path = self.build_dir / "metadata.yml"
         
         # Load and store configuration
-        self.config = self.load_config(self.config_path)
+        self.config = load_config(self.config_path)
         
         # Create build directory if it doesn't exist
         self.build_dir.mkdir(exist_ok=True)
-
-    def load_config(self, config_path: str) -> dict:
-        """Load and validate book configuration
-        Returns:
-            Dict containing book configuration
-        Raises:
-            FileNotFoundError: If config file missing
-            yaml.YAMLError: If config is malformed
-        """
-        try:
-            with open(config_path, 'r', encoding='utf-8') as f:
-                config = yaml.safe_load(f)
-                
-            # Validate required fields
-            required_fields = ['title', 'authorship', 'template', 'style', 'build']
-            missing = [field for field in required_fields if field not in config]
-            if missing:
-                raise ValueError(f"Missing required config fields: {', '.join(missing)}")
-                
-            return config
-                
-        except FileNotFoundError:
-            raise FileNotFoundError(f"Configuration file not found: {config_path}")
-        except yaml.YAMLError as e:
-            raise yaml.YAMLError(f"Error parsing configuration: {e}")
-
-    def load_metadata(self) -> dict:
-        """Load existing build metadata if present, or create new
-        Returns:
-            Dict containing current build metadata
-        """
-        if self.metadata_path.exists():
-            try:
-                with open(self.metadata_path, 'r', encoding='utf-8') as f:
-                    return yaml.safe_load(f)
-            except yaml.YAMLError:
-                # If metadata is corrupted, start fresh
-                pass
         
-        # Return empty metadata structure if no existing file or on error
-        return {
-            'last_build': None,
-            'packages': [],
-            'recipes': {},
-            'sections': {}
-        }
+        self.errors = []  # Add error tracking
 
     def scan_content_directories(self) -> Dict[str, str]:
         """Scan for content directories, excluding system dirs
@@ -206,7 +165,7 @@ class RecipeScanner:
         Returns:
             Complete updated metadata
         """
-        metadata = self.load_metadata()
+        metadata = load_metadata(self.metadata_path)
         
         # Update sections and recipes
         metadata['sections'] = sections
@@ -224,18 +183,33 @@ class RecipeScanner:
         Returns:
             Updated build metadata
         """
-        # Scan for content directories
-        sections = self.scan_content_directories()
+        sections = {}
+        recipes = {}
         
-        # Scan for recipe files
-        recipes = self.scan_recipe_files(sections)
+        try:
+            sections = self.scan_content_directories()
+        except Exception as e:
+            self.errors.append({
+                'section': 'directory_scan',
+                'error': str(e),
+                'type': type(e).__name__
+            })
         
-        # Load existing metadata and detect changes
-        existing = self.load_metadata()
+        try:
+            recipes = self.scan_recipe_files(sections)
+        except Exception as e:
+            self.errors.append({
+                'section': 'recipe_scan',
+                'error': str(e),
+                'type': type(e).__name__
+            })
+        
+        existing = load_metadata(self.metadata_path)
         recipes = self.detect_changes(existing, recipes)
         
-        # Update and save metadata
-        return self.update_metadata(sections, recipes)
+        metadata = self.update_metadata(sections, recipes)
+        metadata['scan_errors'] = self.errors
+        return metadata
 
 
 def parse_args():
@@ -258,27 +232,77 @@ def parse_args():
     return parser.parse_args()
 
 
+def print_scan_summary(metadata: dict) -> None:
+    """Print summary of scan results using rich formatting
+    Args:
+        metadata: Build metadata dictionary
+    """
+    console = Console()
+    
+    # Print summary statistics
+    total_recipes = len(metadata['recipes'])
+    total_sections = len(metadata['sections'])
+    error_count = len(metadata.get('scan_errors', []))
+    changed_count = sum(1 for r in metadata['recipes'].values() if r.get('changed', False))
+    
+    console.print("\n[bold]Scan Summary:[/bold]")
+    console.print(f"• Total sections: {total_sections}")
+    console.print(f"• Total recipes: {total_recipes}")
+    console.print(f"• Changed recipes: [yellow]{changed_count}[/yellow]")
+    console.print(f"• Errors encountered: [red]{error_count}[/red]\n")
+
+    # Create sections table
+    section_table = Table(title="Sections Detected")
+    section_table.add_column("Directory", style="cyan")
+    section_table.add_column("Title")
+    
+    for directory, title in metadata['sections'].items():
+        section_table.add_row(directory, title)
+    
+    console.print(section_table)
+    
+    # Create recipes table
+    recipe_table = Table(title="\nRecipes Found")
+    recipe_table.add_column("Recipe", style="cyan")
+    recipe_table.add_column("Section")
+    recipe_table.add_column("Status", justify="center")
+    
+    for recipe_path, recipe_data in metadata['recipes'].items():
+        status = "[yellow]Changed[/yellow]" if recipe_data.get('changed', False) else "[green]Unchanged[/green]"
+        recipe_table.add_row(recipe_path, recipe_data['section'], status)
+    
+    console.print(recipe_table)
+    
+    # Print errors table if any exist
+    if error_count > 0:
+        error_table = Table(title="\nErrors Encountered")
+        error_table.add_column("Section", style="cyan")
+        error_table.add_column("Error Type", style="magenta")
+        error_table.add_column("Message", style="red")
+        
+        for error in metadata['scan_errors']:
+            error_table.add_row(
+                error['section'],
+                error['type'],
+                error['error']
+            )
+        
+        console.print(error_table)
+
 def main():
     """Main entry point when run as script"""
     args = parse_args()
     
     try:
-        # Initialize scanner with command line arguments
         scanner = RecipeScanner(
             config_path=args.config,
             build_dir=args.build_dir
         )
         
-        # Execute scan and get metadata
         metadata = scanner.scan()
+        print_scan_summary(metadata)
         
-        # Print summary
-        print(f"Scan complete:")
-        print(f"- {len(metadata['sections'])} sections detected")
-        print(f"- {len(metadata['recipes'])} recipes found")
-        print(f"- Metadata written to {scanner.metadata_path}")
-        
-    except (FileNotFoundError, yaml.YAMLError, ValueError) as e:
+    except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
