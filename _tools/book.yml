@@ -17,7 +17,7 @@ style:
     left: 1.4in
     right: 1.5in
   font:
-    family: "Times New Roman"  # Using a common font instead of Doves Type
+    family: "Doves Type"
     scale: 1.2
     auto_fake_bold: 1.5
     auto_fake_slant: 0.3

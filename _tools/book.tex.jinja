@@ -94,21 +94,26 @@
     Copyright © {{ authorship.copyright }} {{ authorship.author }}\\
     All rights reserved.
 \end{center}
-\vspace*{\fill}
-\newpage
 
 {% if style.include_toc %}
 % Table of contents
+\vspace*{\fill}
+\hrulefill
+\vspace*{\fill}
+\newpage 
 \tableofcontents
-\newpage
 {% endif %}
 
 % Recipe chapters (previously sections)
+\vspace*{\fill}
+\hrulefill
+\vspace*{\fill}
+\newpage 
 {% for section_name, recipes in sections.items() %}
 \chapter{ {{- section_name -}} }
 {% for recipe in recipes %}
 \input{ {{- recipe.preprocessed_body -}} }
-\newpage
+
 {% endfor %}
 {% endfor %}
 
