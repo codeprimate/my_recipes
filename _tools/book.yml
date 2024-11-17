@@ -3,7 +3,7 @@ authorship:
   author: "Your Name"
   version: "2024 Edition"
   copyright: "2024"
-template: "_templates/book_template.tex"
+template: "book.tex.jinja"
 style:
   documentclass: "article"
   size: "letterpaper"
