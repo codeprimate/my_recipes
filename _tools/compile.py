@@ -76,11 +76,9 @@ class BookCompiler:
         self.config = load_config(config_path)
         self.metadata = load_metadata(metadata_path)
         self.build_dir = Path(self.config['build']['output_dir']).resolve()
-        
-        # Add error tracking
+        self.template_dir = config_path.parent
         self.errors = []
-        
-        # Setup Jinja environment
+
         self.jinja_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(self.template_dir),
             trim_blocks=True,
