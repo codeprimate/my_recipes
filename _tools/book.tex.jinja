@@ -3,7 +3,6 @@
 \usepackage{fontspec}
 \usepackage{tocloft}
 \usepackage{multicol}
-\usepackage{filename}
 \usepackage[left={{ style.geometry.left }},right={{ style.geometry.right }},top={{ style.geometry.top }},bottom={{ style.geometry.bottom }}]{geometry}
 \setmainfont[Scale={{ style.font.scale }},AutoFakeBold={{ style.font.auto_fake_bold }},AutoFakeSlant={{ style.font.auto_fake_slant }}]{ {{- style.font.family -}} }
 
@@ -47,10 +46,7 @@
 {% for section_name, recipes in sections.items() %}
 \chapter{ {{- section_name -}} }
 {% for recipe in recipes %}
-\makeatletter
-\input@path{ {{- ['.'] -}} }
-\filename@parse{ {{- recipe.extracted_body -}} }
-\input{\filename@area\filename@base}
+\input{ {{- recipe.extracted_body -}} }
 
 {% endfor %}
 {% endfor %}

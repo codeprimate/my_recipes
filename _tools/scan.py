@@ -153,10 +153,6 @@ class RecipeScanner:
             if not section_path.is_dir():
                 continue
             
-            # Create build directory structure preserving spaces
-            build_section_dir = self.build_dir / 'bodies' / section_dir
-            build_section_dir.mkdir(parents=True, exist_ok=True)
-            
             for recipe_file in section_path.glob('*.tex'):
                 relative_path = str(recipe_file.relative_to('.'))
                 
