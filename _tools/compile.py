@@ -214,6 +214,7 @@ class BookCompiler:
                 - style: Style settings from config
                 - packages: Consolidated LaTeX packages
                 - sections: Dict of recipes grouped by section
+                - index: Include index
                 
         Note:
             - Section names are sorted alphabetically after stripping numeric prefixes
@@ -239,7 +240,10 @@ class BookCompiler:
             'sections': {},
             
             # Add twoside flag directly to template vars
-            'twoside': self.config['style'].get('twoside', False)
+            'twoside': self.config['style'].get('twoside', False),
+
+            # Add index flag directly to template vars
+            'index': self.config['style'].get('include_index', False)
         }
         
         # Get ordered section names
