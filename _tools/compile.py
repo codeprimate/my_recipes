@@ -203,10 +203,16 @@ class BookCompiler:
             Section names are sorted alphabetically after stripping numeric prefixes
             Recipes within sections are sorted by title
         """
+        # Convert last_build timestamp to datetime
+        last_build = datetime.fromisoformat(self.metadata.get('last_build', datetime.now().isoformat()))
+        
         template_vars = {
             # Copy config sections
             'title': self.config['title'],
-            'authorship': self.config['authorship'],
+            'authorship': {
+                **self.config['authorship'],
+                'date': last_build.strftime('%Y Edition - %B')
+            },
             'style': self.config['style'],
             
             # Add consolidated packages
@@ -304,17 +310,20 @@ class BookCompiler:
                     text=True
                 )
                 
-                if result.returncode != 0:
+                # Check for actual error indicators in the output rather than just return code
+                if "Fatal error occurred" in result.stdout or "Emergency stop" in result.stdout:
                     error_message = result.stderr if result.stderr else "LaTeX compilation failed"
                     self.errors.append({
                         'phase': 'latex',
                         'error': error_message
                     })
 
-                # Print the full output for debugging
-                print("\nLaTeX Compiler Output:")
-                print(result.stdout)
-               # return False
+                    print("\nLaTeX Compiler Output:")
+                    print(result.stdout)
+                    
+                    return False
+
+
             
             print("Cleaning up auxiliary files...")
             # Clean up auxiliary files
