@@ -4,3 +4,4 @@
 *.gz
 .aider*
 *.swp
+_build/
