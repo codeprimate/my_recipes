@@ -74,27 +74,21 @@ class RecipeExtractor:
         self.config['build']['output_dir'] = str(self.build_dir)
         self.errors = []
 
-    def extract_content(self, recipe_path: Path) -> Tuple[str, Set[str]]:
+    def extract_content(self, recipe_path: Path) -> Tuple[str, Set[str], Optional[str]]:
         """Extract content and package requirements from a LaTeX recipe file.
-
-        Processes a recipe file to extract:
-        1. Content between begin{document} and end{document} tags
-        2. Package requirements from usepackage statements
 
         Args:
             recipe_path: Path to LaTeX recipe file to process
 
         Returns:
-            tuple: (content, packages) where:
+            tuple: (content, packages, title) where:
                 - content (str): Extracted content between document tags
                 - packages (Set[str]): Set of required LaTeX package names
-
-        Raises:
-            ValueError: If no content found between document tags
-            FileNotFoundError: If recipe file cannot be opened
+                - title (Optional[str]): Title from \title{} command if found
         """
         packages = set()
         content = ""
+        title = None
         
         with open(recipe_path, 'r', encoding='utf-8') as f:
             lines = f.readlines()
@@ -103,10 +97,13 @@ class RecipeExtractor:
         for line in lines:
             # Look for package requirements
             if r'\usepackage' in line:
-                # Extract package name from \usepackage{package_name}
                 package = line.split('{')[1].split('}')[0]
                 packages.add(package)
-                
+            
+            # Look for title
+            if r'\title{' in line:
+                title = line.split(r'\title{')[1].split('}')[0]
+            
             # Track document content
             if r'\begin{document}' in line:
                 in_document = True
@@ -122,7 +119,7 @@ class RecipeExtractor:
         if not content:
             raise ValueError(f"No content found between document tags in {recipe_path}")
             
-        return content.strip(), packages
+        return content.strip(), packages, title
 
     def save_extracted_content(self, recipe_path: Path, content: str) -> Path:
         """Save extracted content to build directory.
@@ -151,31 +148,28 @@ class RecipeExtractor:
         # Return path relative to build directory
         return build_path.relative_to(self.build_dir)
 
-    def update_metadata(self, recipe_path: str, packages: Set[str], extracted_path: Path) -> None:
+    def update_metadata(self, recipe_path: str, packages: Set[str], extracted_path: Path, title: Optional[str]) -> None:
         """Update metadata with extraction results.
-
-        Updates the build metadata with:
-        - Package requirements for the recipe
-        - Path to extracted content file
-        - Global consolidated package list
 
         Args:
             recipe_path: Path to original recipe file
             packages: Set of required LaTeX packages
             extracted_path: Path where extracted content was saved
-
-        Raises:
-            yaml.YAMLError: If metadata cannot be saved
+            title: Recipe title if found in LaTeX file
         """
-        # Update recipe entry
         if recipe_path not in self.metadata['recipes']:
             print(f"Error: Recipe {recipe_path} not found in metadata", file=sys.stderr)
             return
         
-        self.metadata['recipes'][recipe_path].update({
+        update_data = {
             'packages': list(packages),
             'extracted_body': str(extracted_path)
-        })
+        }
+        
+        if title:
+            update_data['title'] = title
+        
+        self.metadata['recipes'][recipe_path].update(update_data)
         
         # Update global package list
         if 'packages' not in self.metadata:
@@ -218,9 +212,9 @@ class RecipeExtractor:
 
             if needs_extraction:
                 try:
-                    content, packages = self.extract_content(Path(recipe_path))
+                    content, packages, title = self.extract_content(Path(recipe_path))
                     extracted_path = self.save_extracted_content(Path(recipe_path), content)
-                    self.update_metadata(recipe_path, packages, extracted_path)
+                    self.update_metadata(recipe_path, packages, extracted_path, title)
                     
                 except Exception as e:
                     self.errors.append({
