@@ -26,16 +26,36 @@ from rich.table import Table
 class RecipeExtractor:
     """Extracts content and package requirements from LaTeX recipe files.
 
-    This class handles the extraction of content between document tags and identifies
-    required LaTeX packages from recipe source files. It maintains a build directory
-    structure and updates metadata to track extraction status.
+    This class is part of the recipe book build pipeline, handling the second stage
+    after initial directory scanning. It processes LaTeX recipe files marked as changed
+    in the build metadata, extracting their content and requirements.
 
     Key Features:
-    - Extracts content between begin{document} and end{document}
-    - Identifies LaTeX package requirements from usepackage statements
+    - Extracts content between \\begin{document} and \\end{document} tags
+    - Identifies LaTeX package requirements from \\usepackage statements
+    - Extracts recipe titles from \\title{} commands
     - Maintains build directory structure for extracted content
     - Updates metadata with extraction results and package requirements
     - Tracks extraction errors for debugging
+    - Provides incremental processing (only changed files)
+
+    Build Pipeline Role:
+    - Reads metadata from scan.py results
+    - Processes files marked as changed
+    - Saves extracted content to _build/bodies/
+    - Updates metadata.yml with extraction results
+    - Prepares content for preprocessing stage
+
+    Metadata Updates:
+    - Per recipe:
+        - Required packages list
+        - Extracted content path
+        - Recipe title
+        - Processing status
+    - Global:
+        - Consolidated package requirements
+        - Extraction errors
+        - Build state tracking
 
     Attributes:
         config_path (Path): Path to book configuration file
@@ -163,7 +183,7 @@ class RecipeExtractor:
         
         update_data = {
             'packages': list(packages),
-            'extracted_body': str(extracted_path)
+            'extracted_body': str(extracted_path) if extracted_path else None
         }
         
         if title:
@@ -184,33 +204,25 @@ class RecipeExtractor:
     def extract_all(self) -> Dict[str, any]:
         """Process all recipes that need extraction.
 
-        Iterates through recipes in metadata and:
-        1. Checks if extraction is needed based on change status
-        2. Extracts content and identifies packages
-        3. Saves extracted content
-        4. Updates metadata
-        5. Tracks any errors encountered
+        Iterates through recipes in metadata and processes those marked as changed:
+        - Extracts content and package requirements from LaTeX files
+        - Saves extracted content to build directory
+        - Updates metadata with extraction results
+        - Tracks any errors encountered during processing
+
+        Only processes recipes where metadata['recipes'][path]['changed'] is True.
+        This allows for incremental builds that only process modified files.
 
         Returns:
-            Dict containing updated build metadata including:
-                - Recipe extraction status
+            Dict[str, any]: Updated metadata dictionary containing:
+                - Extracted content paths
                 - Package requirements
-                - Extraction errors
-
-        Note:
-            Continues processing remaining recipes if an error occurs with one recipe.
-            All errors are collected in self.errors list.
+                - Recipe titles
+                - Any extraction errors encountered
         """
         for recipe_path, recipe_data in self.metadata['recipes'].items():
-            # Check if extraction is needed
-            needs_extraction = (
-                recipe_data.get('changed', False) or  # Extract if changed
-                'extracted_body' not in recipe_data or  # Never extracted
-                not recipe_data.get('extracted_body') or  # Empty path
-                not (self.build_dir / recipe_data.get('extracted_body', '')).exists()  # File missing
-            )
-
-            if needs_extraction:
+            # Only process if explicitly marked as changed
+            if recipe_data.get('changed', False):
                 try:
                     content, packages, title = self.extract_content(Path(recipe_path))
                     extracted_path = self.save_extracted_content(Path(recipe_path), content)
@@ -223,7 +235,6 @@ class RecipeExtractor:
                         'type': type(e).__name__
                     })
                     print(f"Error processing {recipe_path}: {e}", file=sys.stderr)
-                    # Continue processing other recipes instead of raising
 
         # Add errors to metadata
         self.metadata['extraction_errors'] = self.errors

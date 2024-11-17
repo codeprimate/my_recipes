@@ -73,6 +73,13 @@ class BookCompiler:
         - Load book settings and style preferences
         - Track build state and recipe processing status
         - Maintain consistent output locations
+        
+        Side Effects:
+            - Initializes self.config from config_path
+            - Initializes self.metadata from metadata_path
+            - Sets up build and template directories
+            - Creates Jinja environment with specific settings
+            - Initializes empty errors list
         """
         self.config = load_config(config_path)
         self.metadata = load_metadata(metadata_path)
@@ -164,7 +171,9 @@ class BookCompiler:
             List[str]: Sorted list of unique LaTeX packages
         
         Side Effects:
-            Updates self.metadata['packages'] with consolidated list
+            - Updates self.metadata['packages'] with consolidated list
+            - Adds tocloft if TOC is enabled in config
+            - Adds makeidx if index is enabled in config
         """
         packages = set()
         
@@ -195,13 +204,20 @@ class BookCompiler:
         - Style settings from config
         - Consolidated package list
         - Recipes grouped and sorted by section
+        - Last build timestamp formatted for display
         
         Returns:
-            Dict: Template variables ready for Jinja rendering
-            
+            Dict: Template variables including:
+                - title: Book title from config
+                - authorship: Author info and formatted date
+                - style: Style settings from config
+                - packages: Consolidated LaTeX packages
+                - sections: Dict of recipes grouped by section
+                
         Note:
-            Section names are sorted alphabetically after stripping numeric prefixes
-            Recipes within sections are sorted by title
+            - Section names are sorted alphabetically after stripping numeric prefixes
+            - Recipes within sections are sorted by title
+            - Recipe paths have spaces escaped for LaTeX compatibility
         """
         # Convert last_build timestamp to datetime
         last_build = datetime.fromisoformat(self.metadata.get('last_build', datetime.now().isoformat()))
@@ -245,7 +261,20 @@ class BookCompiler:
         return template_vars
 
     def render_template(self) -> str:
-        """Render the LaTeX template"""
+        """Render the LaTeX template
+        
+        Returns:
+            str: Rendered LaTeX content as string
+            
+        Raises:
+            jinja2.TemplateError: If template rendering fails
+                Including TemplateSyntaxError with line number details
+            
+        Side Effects:
+            - Logs debug information about template variables
+            - Adds template errors to self.errors list
+            - Logs detailed error information on failure
+        """
         try:
             template = self.jinja_env.get_template(self.config['template'])
             template_vars = self.prepare_template_vars()
@@ -277,9 +306,6 @@ class BookCompiler:
         1. Initial content and references
         2. Table of contents and cross-references
         
-        After successful compilation, cleans up auxiliary files
-        like .aux, .log, .toc, etc.
-        
         Args:
             tex_path: Path to input .tex file
             output_path: Desired PDF output location
@@ -289,7 +315,9 @@ class BookCompiler:
             
         Side Effects:
             - Creates PDF at output_path
-            - Adds any compilation errors to self.errors
+            - Creates empty filename.sty if it doesn't exist
+            - Adds compilation errors to self.errors
+            - Prints LaTeX compiler output on error
             - Removes auxiliary files after successful compilation
         """
         compiler = self.config.get('latex_compiler', 'xelatex')
@@ -302,7 +330,7 @@ class BookCompiler:
             
             # Run compiler twice for TOC/references
             for run in range(2):
-                logging.info(f"LaTeX compilation run {run + 1}/2")
+                print(f"LaTeX compilation run {run + 1}/2")
                 result = subprocess.run(
                     [compiler, '-interaction=nonstopmode', str(tex_path)],
                     cwd=self.build_dir,
@@ -342,7 +370,24 @@ class BookCompiler:
             return False
 
     def print_compilation_summary(self, pdf_path: Optional[Path] = None):
-        """Print a summary of the compilation process"""
+        """Print a summary of the compilation process
+        
+        Args:
+            pdf_path: Optional path to the compiled PDF file
+            
+        Displays:
+            - Total number of recipes processed
+            - Total number of LaTeX packages used
+            - Error count
+            - Recipe processing status by section
+            - Detailed error table if errors occurred
+            - Output PDF path if successful
+            
+        Side Effects:
+            - Prints formatted tables using rich library
+            - Shows color-coded status indicators
+            - Groups and summarizes errors by phase
+        """
         console = Console()
         
         # Print summary statistics
@@ -445,7 +490,7 @@ class BookCompiler:
             tex_path = self.build_dir / 'book.tex'
             tex_path.write_text(rendered_content, encoding='utf-8')
             
-            # Add indexing step
+            # Add indexing step here, after template rendering but before LaTeX compilation
             if self.config['style'].get('include_index'):
                 print("Generating index...")
                 try:
@@ -493,6 +538,8 @@ def main():
         - Creates build artifacts in output directory
         - Prints compilation summary to console
         - Logs detailed progress information
+        - Sets process exit code
+        - Configures logging to INFO level
     """
     logging.basicConfig(level=logging.INFO)
     
