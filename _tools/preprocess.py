@@ -75,8 +75,8 @@ class RecipePreprocessor:
             bool: True if processing successful
         """
         try:
-            # Load extracted content
-            content_path = Path(recipe_data['extracted_body'])
+            # Load extracted content - convert relative path to absolute
+            content_path = self.build_dir / recipe_data['extracted_body']
             with open(content_path, 'r', encoding='utf-8') as f:
                 content = f.read()
 
@@ -85,7 +85,7 @@ class RecipePreprocessor:
             content = self.action_2(content)
             content = self.action_3(content)
 
-            # Save processed content
+            # Save processed content back to same location
             with open(content_path, 'w', encoding='utf-8') as f:
                 f.write(content)
 

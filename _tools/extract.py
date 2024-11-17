@@ -127,15 +127,12 @@ class RecipeExtractor:
     def save_extracted_content(self, recipe_path: Path, content: str) -> Path:
         """Save extracted content to build directory.
 
-        Creates necessary subdirectories in the build directory and saves
-        the extracted content while maintaining the original file structure.
-
         Args:
             recipe_path: Original recipe file path (used for directory structure)
             content: Extracted LaTeX content to save
 
         Returns:
-            Path: Location where content was saved in build directory
+            Path: Location where content was saved, relative to build directory
 
         Raises:
             OSError: If unable to create directories or write file
@@ -151,7 +148,8 @@ class RecipeExtractor:
         with open(build_path, 'w', encoding='utf-8') as f:
             f.write(content)
 
-        return build_path
+        # Return path relative to build directory
+        return build_path.relative_to(self.build_dir)
 
     def update_metadata(self, recipe_path: str, packages: Set[str], extracted_path: Path) -> None:
         """Update metadata with extraction results.
@@ -215,7 +213,7 @@ class RecipeExtractor:
                 recipe_data.get('changed', False) or  # Extract if changed
                 'extracted_body' not in recipe_data or  # Never extracted
                 not recipe_data.get('extracted_body') or  # Empty path
-                not Path(str(recipe_data.get('extracted_body', ''))).exists()  # File missing
+                not (self.build_dir / recipe_data.get('extracted_body', '')).exists()  # File missing
             )
 
             if needs_extraction:
