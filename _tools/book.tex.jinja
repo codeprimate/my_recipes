@@ -6,6 +6,13 @@
 \usepackage[left={{ style.geometry.left }},right={{ style.geometry.right }},top={{ style.geometry.top }},bottom={{ style.geometry.bottom }}]{geometry}
 \setmainfont[Scale={{ style.font.scale }},AutoFakeBold={{ style.font.auto_fake_bold }},AutoFakeSlant={{ style.font.auto_fake_slant }}]{ {{- style.font.family -}} }
 
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{} % Clear all header/footer fields
+\fancyfoot[C]{\thepage} % Center page number in footer
+\renewcommand{\headrulewidth}{0pt} % Remove header rule
+\renewcommand{\footrulewidth}{0pt} % Remove footer rule
+
 {% for package in packages %}
 {% if package not in ['fontspec', 'tocloft', 'multicol', 'geometry'] %}
 \usepackage{ {{- package -}} }
@@ -21,10 +28,6 @@
 % Title page
 \maketitle
 \thispagestyle{empty}
-
-% Copyright page
-\newpage
-\thispagestyle{empty}
 \vspace*{\fill}
 \begin{center}
     Copyright © {{ authorship.copyright }} {{ authorship.author }}\\
@@ -32,22 +35,23 @@
 \end{center}
 
 % Table of contents
-\vspace*{\fill}
-\hrulefill
-\vspace*{\fill}
 \newpage 
 \tableofcontents
+\newpage
 
-% Recipe chapters (previously sections)
-\vspace*{\fill}
-\hrulefill
-\vspace*{\fill}
-\newpage 
 {% for section_name, recipes in sections.items() %}
 \chapter{ {{- section_name -}} }
+\newpage
+\thispagestyle{empty}
+\newpage 
 {% for recipe in recipes %}
+\begin{center}
+\huge{ {{- recipe.title -}} } 
+\normalsize
+\end{center}
+\addcontentsline{toc}{section}{ {{- recipe.title -}} }
 \input{ {{- recipe.extracted_body -}} }
-
+\newpage 
 {% endfor %}
 {% endfor %}
 

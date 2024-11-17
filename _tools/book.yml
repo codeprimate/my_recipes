@@ -5,7 +5,7 @@ authorship:
   copyright: "2024"
 template: "book.tex.jinja"
 style:
-  documentclass: "article"
+  documentclass: "book"
   size: "letterpaper"
   base_font_size: "11pt"
   twoside: true
