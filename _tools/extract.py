@@ -139,7 +139,12 @@ class RecipeExtractor:
         """
         # Create corresponding path in build directory
         relative_path = Path(recipe_path)
-        build_path = self.bodies_dir / relative_path
+        
+        # Replace spaces with underscores in the path components
+        path_parts = [part.replace(' ', '_') for part in relative_path.parts]
+        safe_path = Path(*path_parts)
+        
+        build_path = self.bodies_dir / safe_path
 
         # Create parent directories if they don't exist
         build_path.parent.mkdir(parents=True, exist_ok=True)
