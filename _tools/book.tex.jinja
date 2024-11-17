@@ -44,6 +44,29 @@
 \vspace*{\fill}
 \newpage
 
+{% if twoside %}
+% Custom empty page handling for two-sided documents
+\newcommand{\emptypage}{
+    \newpage
+    \thispagestyle{empty}
+    \vspace*{\fill}
+    \centerline{\hrulefill}
+    \vspace*{\fill}
+    \clearpage
+}
+
+% Automatically insert empty page with hrulefill when needed
+\let\origchapter\chapter
+\renewcommand{\chapter}{
+    \ifnum\value{page}>1
+        \ifodd\value{page}\else
+            \emptypage
+        \fi
+    \fi
+    \origchapter
+}
+{% endif %}
+
 {% for section_name, recipes in sections.items() %}
 \chapter{ {{- section_name|upper -}} }
 \thispagestyle{empty}
