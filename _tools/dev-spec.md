@@ -60,7 +60,7 @@ authorship:
   author: "Your Name"
   version: "2024 Edition"
   copyright: "2024"
-template: "_templates/book_template.tex"
+template: "book.tex.jinja"
 style:
   documentclass: "article"
   size: "letterpaper"
@@ -137,13 +137,59 @@ sections:
 - Discovers all tex files in content directories
 - Checks modification times against previous build
 - Updates metadata with file information
-- Ignores system directories (starting with `_`)
+- Ignores system directories (starting with `_` or `.`)
+- Provides rich console output with scan summary including:
+  - Total sections and recipes
+  - Changed recipe count
+  - Error tracking
+- Maintains metadata structure:
+```yaml
+last_build: "2024-03-16T15:30:00Z"
+recipes:
+  "path/to/recipe.tex":
+    section: "section_name"
+    mtime: "2024-03-15T10:20:00Z"
+    title: "Recipe Title"
+    packages: []
+    extracted_body: false
+    preprocessed: false
+    changed: true  # Indicates if file changed since last scan
+sections:
+  "section_dir": "Section Title"
+scan_errors:  # Tracks any errors during scanning
+  - section: "directory_scan"
+    error: "Error message"
+    type: "ErrorType"
+```
 
 ### 2. extract.py
 - Extracts content between \begin{document} and \end{document}
-- Identifies package requirements
-- Updates metadata with extracted information
-- Stores raw extracted content in _build/bodies/
+- Identifies package requirements from \usepackage statements
+- Updates metadata with:
+  - List of required packages per recipe
+  - Global consolidated package list
+  - Path to extracted content file
+  - Extraction errors if any occur
+- Stores extracted content in _build/bodies/ maintaining source directory structure
+- Provides rich console output with extraction summary including:
+  - Total recipe count
+  - Successfully processed count
+  - Error count
+  - Detailed tables showing:
+    - Recipe processing status
+    - Any errors encountered
+- Maintains metadata structure:
+```yaml
+recipes:
+  "path/to/recipe.tex":
+    packages: []  # List of required packages
+    extracted_body: "_build/bodies/path/to/recipe.tex"
+packages: []  # Global consolidated package list
+extraction_errors:  # Tracks any errors during extraction
+  - recipe: "path/to/recipe.tex"
+    error: "Error message"
+    type: "ErrorType"
+```
 
 ### 3. preprocess.py
 - Normalizes extracted content
@@ -152,7 +198,7 @@ sections:
 - Updates metadata with preprocessing status
 
 ### 4. compile.py
-- Reads master template
+- Reads master template from `_tools/book.tex.jinja`
 - Integrates all required packages
 - Includes preprocessed content
 - Generates final book

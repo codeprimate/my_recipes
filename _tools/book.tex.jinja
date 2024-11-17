@@ -1,0 +1,120 @@
+\documentclass[{{ style.base_font_size }}, {{ "twoside" if style.twoside else "oneside" }}]{{{ style.documentclass }}}
+
+% Required packages (automatically detected from recipes)
+{% for package in packages %}
+\usepackage{ {{- package -}} }
+{% endfor %}
+
+% Document geometry
+\usepackage[
+    paper={{ style.size }},
+    top={{ style.geometry.top }},
+    bottom={{ style.geometry.bottom }},
+    left={{ style.geometry.left }},
+    right={{ style.geometry.right }}
+]{geometry}
+
+% Font configuration
+\usepackage{fontspec}
+\setmainfont[
+    Scale={{ style.font.scale }},
+    AutoFakeBold={{ style.font.auto_fake_bold }},
+    AutoFakeSlant={{ style.font.auto_fake_slant }}
+]{{"{"}}{{ style.font.family }}{{"}"}}
+
+% Table of contents configuration
+{% if style.include_toc %}
+\usepackage{tocloft}
+\renewcommand{\cftsecfont}{\normalfont}
+\renewcommand{\cftsecpagefont}{\normalfont}
+\setlength{\cftbeforesecskip}{3pt}
+{% endif %}
+
+% Recipe formatting
+\usepackage{titlesec}
+\titleformat{\section}[display]
+    {\normalfont\huge\bfseries\centering}
+    {}
+    {0pt}
+    {}
+\titlespacing*{\section}{0pt}{50pt}{40pt}
+
+% Custom recipe title command
+\newcommand{\recipetitle}[1]{%
+    \begin{center}
+        \huge\textbf{#1}
+        \vspace{1em}
+    \end{center}
+}
+
+% Document metadata
+\title{ {{- title -}} }
+\author{ {{- authorship.author -}} }
+\date{ {{- authorship.version -}} }
+
+% Header/footer configuration
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{} % Clear default headers/footers
+
+% For one-sided printing
+{% if not style.twoside %}
+\fancyhead[L]{\leftmark} % Chapter name on left
+\fancyfoot[C]{\thepage} % Page number centered
+{% else %}
+% For two-sided printing
+\fancyhead[LE,RO]{\thepage} % Page numbers on outer edges
+\fancyhead[RE]{\leftmark} % Chapter name on even pages (left)
+\fancyhead[LO]{\rightmark} % Section name on odd pages (right)
+{% endif %}
+
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Change sections to chapters
+\renewcommand{\thechapter}{}
+\titleformat{\chapter}[display]
+    {\normalfont\huge\bfseries\centering}
+    {}
+    {0pt}
+    {}
+\titlespacing*{\chapter}{0pt}{50pt}{40pt}
+
+\begin{document}
+
+% Title page
+\maketitle
+\thispagestyle{empty}
+
+% Copyright page
+\newpage
+\thispagestyle{empty}
+\vspace*{\fill}
+\begin{center}
+    Copyright © {{ authorship.copyright }} {{ authorship.author }}\\
+    All rights reserved.
+\end{center}
+\vspace*{\fill}
+\newpage
+
+{% if style.include_toc %}
+% Table of contents
+\tableofcontents
+\newpage
+{% endif %}
+
+% Recipe chapters (previously sections)
+{% for section_name, recipes in sections.items() %}
+\chapter{ {{- section_name -}} }
+{% for recipe in recipes %}
+\input{ {{- recipe.preprocessed_body -}} }
+\newpage
+{% endfor %}
+{% endfor %}
+
+{% if style.include_index %}
+% Index
+\printindex
+{% endif %}
+
+\end{document} 
