@@ -2,6 +2,5 @@
 *.aux
 *.log
 *.gz
-.aider*
 *.swp
 _build/

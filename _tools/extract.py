@@ -24,6 +24,29 @@ from rich.table import Table
 
 
 class RecipeExtractor:
+    """Extracts content and package requirements from LaTeX recipe files.
+
+    This class handles the extraction of content between document tags and identifies
+    required LaTeX packages from recipe source files. It maintains a build directory
+    structure and updates metadata to track extraction status.
+
+    Key Features:
+    - Extracts content between \begin{document} and \end{document}
+    - Identifies LaTeX package requirements from \usepackage statements
+    - Maintains build directory structure for extracted content
+    - Updates metadata with extraction results and package requirements
+    - Tracks extraction errors for debugging
+
+    Attributes:
+        config_path (Path): Path to book configuration file
+        build_dir (Path): Path to build output directory
+        metadata_path (Path): Path to build metadata file
+        bodies_dir (Path): Path to extracted content directory
+        config (dict): Loaded configuration settings
+        metadata (dict): Build metadata tracking
+        errors (list): List of extraction errors encountered
+    """
+
     def __init__(self, config_path: str = "_tools/book.yml", build_dir: str = "_build") -> None:
         """Initialize extractor with configuration.
 
@@ -52,15 +75,19 @@ class RecipeExtractor:
         self.errors = []
 
     def extract_content(self, recipe_path: Path) -> Tuple[str, Set[str]]:
-        """Extract content and package requirements from a recipe file.
+        """Extract content and package requirements from a LaTeX recipe file.
+
+        Processes a recipe file to extract:
+        1. Content between \begin{document} and \end{document} tags
+        2. Package requirements from \usepackage statements
 
         Args:
             recipe_path: Path to LaTeX recipe file to process
 
         Returns:
-            Tuple containing:
-                - str: Extracted content between document tags
-                - Set[str]: Set of required LaTeX package names
+            tuple: (content, packages) where:
+                - content (str): Extracted content between document tags
+                - packages (Set[str]): Set of required LaTeX package names
 
         Raises:
             ValueError: If no content found between document tags
@@ -100,8 +127,11 @@ class RecipeExtractor:
     def save_extracted_content(self, recipe_path: Path, content: str) -> Path:
         """Save extracted content to build directory.
 
+        Creates necessary subdirectories in the build directory and saves
+        the extracted content while maintaining the original file structure.
+
         Args:
-            recipe_path: Original recipe file path
+            recipe_path: Original recipe file path (used for directory structure)
             content: Extracted LaTeX content to save
 
         Returns:
@@ -125,6 +155,11 @@ class RecipeExtractor:
 
     def update_metadata(self, recipe_path: str, packages: Set[str], extracted_path: Path) -> None:
         """Update metadata with extraction results.
+
+        Updates the build metadata with:
+        - Package requirements for the recipe
+        - Path to extracted content file
+        - Global consolidated package list
 
         Args:
             recipe_path: Path to original recipe file
@@ -157,11 +192,22 @@ class RecipeExtractor:
     def extract_all(self) -> Dict[str, any]:
         """Process all recipes that need extraction.
 
-        Returns:
-            Dict containing updated build metadata and list of errors
+        Iterates through recipes in metadata and:
+        1. Checks if extraction is needed based on change status
+        2. Extracts content and identifies packages
+        3. Saves extracted content
+        4. Updates metadata
+        5. Tracks any errors encountered
 
-        Raises:
-            Exception: Only if critical errors occur (config/metadata related)
+        Returns:
+            Dict containing updated build metadata including:
+                - Recipe extraction status
+                - Package requirements
+                - Extraction errors
+
+        Note:
+            Continues processing remaining recipes if an error occurs with one recipe.
+            All errors are collected in self.errors list.
         """
         for recipe_path, recipe_data in self.metadata['recipes'].items():
             # Check if extraction is needed

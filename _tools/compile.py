@@ -82,10 +82,18 @@ class BookCompiler:
         )
 
     def validate_build_state(self) -> bool:
-        """Check if all recipes have been preprocessed
+        """Validate build state and check if recipes need reprocessing
+        
+        Checks:
+        - Existence of recipes in metadata
+        - File modification times against last build
+        - Presence of preprocessed content files
         
         Returns:
-            bool: True if all recipes are ready for compilation
+            bool: True if build state is valid and no rebuilds needed
+        
+        Side Effects:
+            Adds validation errors to self.errors list
         """
         if not self.metadata['recipes']:
             self.errors.append({
@@ -94,13 +102,16 @@ class BookCompiler:
             })
             return False
 
-        # Replace direct logging with error collection
+        needs_rebuild = False
         for recipe_path, recipe in self.metadata['recipes'].items():
-            if not recipe.get('preprocessed'):
+            # Check if recipe changed since last build
+            current_mtime = Path(recipe_path).stat().st_mtime
+            if current_mtime > recipe.get('mtime', 0):
+                needs_rebuild = True
                 self.errors.append({
                     'phase': 'validation',
                     'recipe': recipe_path,
-                    'error': 'Recipe not preprocessed'
+                    'error': 'Recipe modified since last build'
                 })
                 continue
             
@@ -112,13 +123,21 @@ class BookCompiler:
                     'error': f'Preprocessed file missing: {body_path}'
                 })
         
-        return len(self.errors) == 0
+        return not needs_rebuild and len(self.errors) == 0
 
     def consolidate_packages(self) -> List[str]:
-        """Consolidate unique package requirements
+        """Consolidate LaTeX package requirements from all sources
+        
+        Combines packages from:
+        - Individual recipe requirements
+        - Template-required packages (REQUIRED_PACKAGES)
+        - Optional packages based on configuration
         
         Returns:
             List[str]: Sorted list of unique LaTeX packages
+        
+        Side Effects:
+            Updates self.metadata['packages'] with consolidated list
         """
         packages = set()
         
@@ -142,7 +161,21 @@ class BookCompiler:
         return sorted_packages
 
     def prepare_template_vars(self) -> Dict:
-        """Prepare variables for template rendering"""
+        """Prepare variables for template rendering
+        
+        Organizes data including:
+        - Book title and authorship from config
+        - Style settings from config
+        - Consolidated package list
+        - Recipes grouped and sorted by section
+        
+        Returns:
+            Dict: Template variables ready for Jinja rendering
+            
+        Note:
+            Section names are sorted alphabetically after stripping numeric prefixes
+            Recipes within sections are sorted by title
+        """
         template_vars = {
             # Copy config sections
             'title': self.config['title'],
