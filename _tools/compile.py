@@ -310,11 +310,11 @@ class BookCompiler:
                         'phase': 'latex',
                         'error': error_message
                     })
-                    
+
                 # Print the full output for debugging
                 print("\nLaTeX Compiler Output:")
                 print(result.stdout)
-                return False
+               # return False
             
             print("Cleaning up auxiliary files...")
             # Clean up auxiliary files

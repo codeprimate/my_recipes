@@ -37,13 +37,18 @@
 % Table of contents
 \newpage 
 \tableofcontents
+\vspace*{\fill}
+\hrulefill
+\vspace*{\fill}
 \newpage
 
 {% for section_name, recipes in sections.items() %}
-\chapter{ {{- section_name -}} }
+\chapter{ {{- section_name|upper -}} }
+\vspace*{\fill}
+\hrulefill
+\vspace*{\fill}
 \newpage
 \thispagestyle{empty}
-\newpage 
 {% for recipe in recipes %}
 \begin{center}
 \huge{ {{- recipe.title -}} } 
