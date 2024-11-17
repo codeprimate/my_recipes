@@ -137,16 +137,11 @@ class RecipeExtractor:
         Raises:
             OSError: If unable to create directories or write file
         """
-        # Create corresponding path in build directory
-        relative_path = Path(recipe_path)
-        
-        # Replace spaces with underscores in the path components
-        path_parts = [part.replace(' ', '_') for part in relative_path.parts]
-        safe_path = Path(*path_parts)
-        
+        # Convert the entire path at once, before creating any directories
+        safe_path = Path(*[part.replace(' ', '_') for part in recipe_path.parts])
         build_path = self.bodies_dir / safe_path
-
-        # Create parent directories if they don't exist
+        
+        # Create only the necessary parent directories
         build_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Save content to file
