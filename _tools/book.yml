@@ -22,5 +22,5 @@ style:
     auto_fake_bold: 1.5
     auto_fake_slant: 0.3
 build:
-  source: ""  # Empty string means current directory
+  source: ""
   output_dir: "_build" 

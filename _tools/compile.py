@@ -227,14 +227,26 @@ class BookCompiler:
             raise
 
     def run_latex_compiler(self, tex_path: Path, output_path: Path) -> bool:
-        """Run LaTeX compiler
+        """Run LaTeX compiler to generate PDF output
+        
+        Executes LaTeX compiler twice to handle:
+        1. Initial content and references
+        2. Table of contents and cross-references
+        
+        After successful compilation, cleans up auxiliary files
+        like .aux, .log, .toc, etc.
         
         Args:
-            tex_path: Path to the LaTeX source file to compile
-            output_path: Path where the final PDF should be saved
+            tex_path: Path to input .tex file
+            output_path: Desired PDF output location
         
         Returns:
-            bool: True if compilation succeeded
+            bool: True if compilation succeeded, False if errors occurred
+            
+        Side Effects:
+            - Creates PDF at output_path
+            - Adds any compilation errors to self.errors
+            - Removes auxiliary files after successful compilation
         """
         compiler = self.config.get('latex_compiler', 'xelatex')
         
@@ -275,26 +287,48 @@ class BookCompiler:
         """Print a summary of the compilation process"""
         console = Console()
         
-        console.print("\n[bold]Compilation Summary[/bold]")
-        console.print("=" * 20)
+        # Print summary statistics
+        total_recipes = len(self.metadata['recipes'])
+        total_packages = len(self.metadata.get('packages', []))
+        error_count = len(self.errors)
         
-        # Stats table
-        stats = Table(show_header=False)
-        stats.add_row("Total Recipes", str(len(self.metadata['recipes'])))
-        stats.add_row("Total Packages", str(len(self.metadata.get('packages', []))))
-        stats.add_row("Total Errors", str(len(self.errors)))
-        console.print(stats)
+        console.print("\n[bold]Compilation Summary:[/bold]")
+        console.print(f"• Total recipes: {total_recipes}")
+        console.print(f"• Total packages: {total_packages}")
+        console.print(f"• Errors: [red]{error_count}[/red]\n")
         
         if pdf_path:
-            console.print(f"\nOutput: [green]{pdf_path}[/green]")
+            console.print(f"Output: [green]{pdf_path}[/green]\n")
         
+        # Create recipes table
+        recipe_table = Table(title="Recipe Processing Status")
+        recipe_table.add_column("Section", style="cyan")
+        recipe_table.add_column("Recipes", justify="right")
+        recipe_table.add_column("Status", justify="center")
+        
+        # Group recipes by section
+        sections = {}
+        for recipe in self.metadata['recipes'].values():
+            section = recipe['section']
+            if section not in sections:
+                sections[section] = {'total': 0, 'errors': 0}
+            sections[section]['total'] += 1
+            if any(e.get('recipe') == recipe['path'] for e in self.errors):
+                sections[section]['errors'] += 1
+        
+        # Add rows for each section
+        for section, counts in sorted(sections.items()):
+            status = "[green]OK[/green]" if counts['errors'] == 0 else f"[red]{counts['errors']} errors[/red]"
+            recipe_table.add_row(section, str(counts['total']), status)
+        
+        console.print(recipe_table)
+        
+        # Print errors table if any exist
         if self.errors:
-            console.print("\n[bold red]Error Details:[/bold red]")
-            
-            error_table = Table(show_header=True)
-            error_table.add_column("Phase")
-            error_table.add_column("Recipe", style="dim")
-            error_table.add_column("Error", style="red")
+            error_table = Table(title="\nErrors Encountered")
+            error_table.add_column("Phase", style="magenta")
+            error_table.add_column("Recipe", style="cyan")
+            error_table.add_column("Error", style="red", no_wrap=False)
             
             for error in self.errors:
                 error_table.add_row(
@@ -306,7 +340,27 @@ class BookCompiler:
             console.print(error_table)
 
     def compile(self) -> Optional[Path]:
-        """Execute full compilation process"""
+        """Execute full compilation pipeline
+        
+        Pipeline steps:
+        1. Validate build state and dependencies
+        2. Consolidate required LaTeX packages
+        3. Render template with recipe content
+        4. Generate index if configured
+        5. Run LaTeX compiler
+        
+        Returns:
+            Path: Path to compiled PDF on success
+            None: If any step fails
+            
+        Raises:
+            ValueError: If build validation fails
+            
+        Side Effects:
+            - Creates intermediate .tex files
+            - Generates final PDF
+            - Tracks errors in self.errors
+        """
         self.errors = []  # Reset errors
         
         if not self.validate_build_state():
@@ -359,18 +413,23 @@ class BookCompiler:
             raise
 
 def main():
-    """Main entry point for compilation
+    """Command-line entry point for recipe book compilation
     
-    Executes the full compilation pipeline:
-    1. Loads configuration and metadata
-    2. Initializes BookCompiler
-    3. Runs compilation process
-    4. Generates summary output
-    5. Handles any errors
+    Workflow:
+    1. Configure logging
+    2. Initialize compiler with config/metadata
+    3. Run compilation pipeline
+    4. Generate summary report
+    5. Set exit code based on success/failure
     
-    Exit codes:
-    - 0: Successful compilation
-    - 1: Compilation failed
+    Exit Codes:
+        0: Successful compilation with PDF output
+        1: Compilation failed (see error details in summary)
+    
+    Side Effects:
+        - Creates build artifacts in output directory
+        - Prints compilation summary to console
+        - Logs detailed progress information
     """
     logging.basicConfig(level=logging.INFO)
     

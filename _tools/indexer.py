@@ -4,6 +4,8 @@ from dataclasses import dataclass
 import re
 from collections import defaultdict
 from culinary_data_manager import CulinaryDataManager
+from rich.console import Console
+from rich.table import Table
 
 """Cookbook Index Generator
 
@@ -98,24 +100,24 @@ class CookbookIndexer:
         self._write_output(processed_content, output_file)
 
     def _process_content(self, content: str) -> str:
-        """Process the LaTeX content and identify indexable terms.
+        """Process LaTeX content to identify and index terms.
         
-        Processes cookbook content line by line to:
-        1. Track page numbers via \newpage commands
-        2. Identify recipe titles from section headings
-        3. Process ingredients (marked with \dotfill)
-        4. Process regular text for culinary terms
+        Processes cookbook content line by line to identify indexable terms and add
+        appropriate index markup. Handles special cases like recipe titles and 
+        ingredient lists.
         
         Args:
             content: Raw LaTeX content from cookbook file
             
         Returns:
-            Processed content with index markup added
+            str: Processed content with index markup added
             
-        Example line formats:
-            Recipe titles: \section*{Recipe Name}
-            Ingredients: Ingredient name \dotfill amount
-            Regular text: Standard LaTeX content
+        Processing steps:
+        1. Track page numbers via \newpage commands
+        2. Identify recipe titles from section headings
+        3. Process ingredients (marked with \dotfill)
+        4. Process regular text for culinary terms
+        5. Add index markup while preserving LaTeX formatting
         """
         current_page = 1
         current_recipe = None
@@ -148,17 +150,21 @@ class CookbookIndexer:
         return '\n'.join(processed_lines)
 
     def _process_recipe_title(self, title: str, page: int) -> None:
-        """Process a recipe title for indexing.
+        """Process a recipe title and create related index entries.
         
-        Handles special processing for recipe titles including:
-        1. Adding title to tracked recipe set
-        2. Creating primary index entry for the recipe
-        3. Identifying and indexing cuisine/dish terms from title
-        4. Creating hierarchical index entries for identified terms
+        Creates index entries for the recipe title itself and any culinary terms
+        found within the title. Recipe titles get special handling with bold page
+        numbers and potential hierarchical entries.
         
         Args:
             title: Recipe title text from section heading
             page: Current page number where title appears
+            
+        Processing steps:
+        1. Add title to tracked recipe set
+        2. Create primary index entry for recipe (bold page number)
+        3. Identify cuisine/dish terms from title
+        4. Create hierarchical index entries for identified terms
         """
         self.recipe_titles.add(title)
         
@@ -190,15 +196,37 @@ class CookbookIndexer:
                     )
                 )
 
+    def _clean_latex(self, text: str) -> str:
+        """Remove LaTeX commands while preserving the content inside them.
+        
+        Args:
+            text: Raw LaTeX text
+            
+        Returns:
+            str: Cleaned text with commands removed but content preserved
+        """
+        # Remove comments
+        text = re.sub(r'%.*$', '', text, flags=re.MULTILINE)
+        
+        # Replace common LaTeX commands while preserving their content
+        text = re.sub(r'\\[a-zA-Z]+(\[.*?\])?{([^{}]*)}', r'\2', text)
+        
+        # Remove remaining command markers and braces
+        text = re.sub(r'\\[a-zA-Z]+', ' ', text)
+        text = text.replace('{', ' ').replace('}', ' ')
+        
+        # Clean up whitespace
+        text = ' '.join(text.split())
+        
+        return text
+
     def _process_line(self, line: str, page: int, current_recipe: Optional[str], 
                      is_ingredient_list: bool) -> str:
-        """Process a single line of text and return it with index commands.
+        """Process a single line of text and add index markup.
         
-        Handles two types of lines differently:
-        1. Ingredient lines (containing \dotfill): Extracts ingredient name before \dotfill
-        2. Regular text lines: Processes entire line for culinary terms
-        
-        Skips processing of LaTeX commands and comments to avoid false matches.
+        Analyzes line content for indexable terms and adds appropriate index markup.
+        Handles ingredient lines and regular text differently, with special confidence
+        handling for explicitly listed ingredients.
         
         Args:
             line: Single line of LaTeX content to process
@@ -207,26 +235,28 @@ class CookbookIndexer:
             is_ingredient_list: True if line contains \dotfill (ingredient line)
             
         Returns:
-            Processed line with index markup added
+            str: Line with index markup added
             
-        Example inputs:
-            Ingredient line: "Sharp cheddar cheese \dotfill 2 cups"
-            Regular line: "Mix the diced onions with the garlic"
-            Command line: "\begin{multicols}{2}" (skipped)
-            Comment line: "% Recipe notes" (skipped)
+        Processing steps:
+        1. Skip LaTeX commands and comments
+        2. Extract ingredient names from ingredient lines
+        3. Match terms with confidence scoring
+        4. Create index entries while avoiding overlaps
+        5. Preserve original LaTeX formatting
         """
         # Skip processing of LaTeX commands and comments
         if line.strip().startswith('\\') or line.strip().startswith('%'):
             return line
         
+        # Clean the line before matching
+        clean_line = self._clean_latex(line)
+        
         if is_ingredient_list:
-            # Extract ingredient name (everything before \dotfill)
-            ingredient = line.split('\\dotfill')[0].strip()
-            # Process ingredient with higher confidence since it's explicitly listed
+            ingredient = clean_line.split('dotfill')[0].strip()  # Note: \dotfill was cleaned
             matches = self.data_manager.get_term_matches(ingredient)
         else:
             # Normal term matching for non-ingredient lines
-            matches = self.data_manager.get_term_matches(line)
+            matches = self.data_manager.get_term_matches(clean_line)
         
         # Sort matches by confidence
         matches.sort(key=lambda x: x[1], reverse=True)
@@ -258,18 +288,23 @@ class CookbookIndexer:
         return line
 
     def _generate_index_commands(self) -> List[str]:
-        """Generate LaTeX index commands for all entries.
+        """Generate formatted LaTeX index commands.
         
-        Creates formatted LaTeX index commands by:
-        1. Grouping entries by category
-        2. Sorting entries within categories
-        3. Generating appropriate command format based on entry type:
-           - Bold page numbers for recipe titles
-           - Subentries for terms within recipes
-           - Standard entries for other terms
+        Creates properly formatted index commands for all entries, handling special
+        cases like recipe titles and hierarchical relationships. Groups entries by
+        category for better organization.
         
         Returns:
             List[str]: LaTeX index commands for all processed entries
+            
+        Generation steps:
+        1. Group entries by category
+        2. Sort entries within categories
+        3. Format commands based on entry type:
+           - Bold page numbers for recipe titles
+           - Subentries for terms within recipes
+           - Standard entries for other terms
+        4. Handle special formatting and cross-references
         """
         commands = []
         
@@ -341,6 +376,9 @@ class CookbookIndexer:
         # Write the output
         with open(output_file, 'w', encoding='utf-8') as file:
             file.write(modified_content)
+        
+        # Print summary after successful write
+        self.print_indexing_summary()
 
     def set_confidence_threshold(self, threshold: float) -> None:
         """Set the confidence threshold for including terms in the index.
@@ -358,6 +396,71 @@ class CookbookIndexer:
             self.confidence_threshold = threshold
         else:
             raise ValueError("Confidence threshold must be between 0 and 1")
+
+    def print_indexing_summary(self) -> None:
+        """Print summary of indexing results using rich formatting"""
+        console = Console()
+        
+        # Calculate summary statistics
+        total_terms = len(self.entries)
+        total_entries = sum(len(entries) for entries in self.entries.values())
+        recipe_count = len(self.recipe_titles)
+        
+        # Print summary statistics
+        console.print("\n[bold]Indexing Summary:[/bold]")
+        console.print(f"• Total unique terms: {total_terms}")
+        console.print(f"• Total index entries: {total_terms}")
+        console.print(f"• Recipes indexed: {recipe_count}\n")
+        
+        # Create category summary table
+        category_table = Table(title="Index Categories")
+        category_table.add_column("Category", style="cyan")
+        category_table.add_column("Terms", justify="right")
+        category_table.add_column("Entries", justify="right")
+        
+        # Group entries by category
+        categories = defaultdict(lambda: {"terms": 0, "entries": 0})
+        for term, entry_list in self.entries.items():
+            # Use the highest confidence entry's category
+            best_entry = max(entry_list, key=lambda x: x.confidence)
+            categories[best_entry.category]["terms"] += 1
+            categories[best_entry.category]["entries"] += len(entry_list)
+        
+        # Add rows for each category
+        for category, counts in sorted(categories.items()):
+            category_table.add_row(
+                category.title(),
+                str(counts["terms"]),
+                str(counts["entries"])
+            )
+        
+        console.print(category_table)
+        
+        # Create recipe index coverage table
+        recipe_table = Table(title="\nRecipe Index Coverage")
+        recipe_table.add_column("Recipe Title", style="cyan")
+        recipe_table.add_column("Terms Found", justify="right")
+        recipe_table.add_column("Coverage", justify="center")
+        
+        # Calculate terms per recipe
+        recipe_terms = defaultdict(int)
+        for term, entry_list in self.entries.items():
+            for entry in entry_list:
+                if entry.parent_recipe:
+                    recipe_terms[entry.parent_recipe] += 1
+        
+        # Add rows for each recipe
+        for recipe in sorted(self.recipe_titles):
+            term_count = recipe_terms[recipe]
+            # Simple coverage rating based on number of terms
+            coverage = (
+                "[green]High[/green]" if term_count > 10
+                else "[yellow]Medium[/yellow]" if term_count > 5
+                else "[red]Low[/red]"
+            )
+            recipe_table.add_row(recipe, str(term_count), coverage)
+        
+        console.print(recipe_table)
 
 def demo_usage():
     """Demonstrate usage of the CookbookIndexer"""

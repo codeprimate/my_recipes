@@ -13,6 +13,8 @@ import pandas as pd
 from urllib.request import urlretrieve
 import zipfile
 import io
+import pickle
+from tqdm import tqdm
 
 @dataclass
 class CulinaryTerm:
@@ -57,6 +59,7 @@ class CulinaryDataManager:
         """Initialize the manager and required NLP components."""
         self.terms: Dict[str, CulinaryTerm] = {}
         self.nlp = spacy.load("en_core_web_sm")
+        self.cache_file = Path("_build/culinary_data.pkl")
         
         # Download required NLTK data
         try:
@@ -66,41 +69,79 @@ class CulinaryDataManager:
             nltk.download('omw-1.4')
 
     def load_all_data(self):
-        """Load and process all available culinary data sources.
+        """Load and process all available culinary data sources."""
+        if self._load_cached_data():
+            print("✓ Loaded cached culinary data")
+            return
+            
+        print("Building culinary data from sources...")
+        print("This may take a few minutes on first run.")
         
-        Orchestrates the complete data loading process:
-        1. Loads USDA food database
-        2. Extracts terms from WordNet
-        3. Enhances terms using NLP
+        with tqdm(total=4, desc="Loading data") as pbar:
+            self.load_usda_data()
+            pbar.update(1)
+            
+            self.load_wordnet_data()
+            pbar.update(1)
+            
+            pbar.set_description("Enhancing with NLP")
+            self.enhance_with_nlp()
+            pbar.update(1)
+            
+            pbar.set_description("Saving cache")
+            self._save_cached_data()
+            pbar.update(1)
+
+    def _load_cached_data(self) -> bool:
+        """Load cached culinary data if available.
+        
+        Returns:
+            bool: True if cached data was loaded successfully
         """
-        self.load_usda_data()
-        self.load_wordnet_data()
-        self.enhance_with_nlp()
+        if not self.cache_file.exists():
+            return False
+            
+        try:
+            with open(self.cache_file, 'rb') as f:
+                self.terms = pickle.load(f)
+            return True
+        except Exception as e:
+            print(f"Warning: Failed to load cached data: {e}")
+            return False
+
+    def _save_cached_data(self):
+        """Save culinary data to cache file."""
+        self.cache_file.parent.mkdir(exist_ok=True)
+        try:
+            with open(self.cache_file, 'wb') as f:
+                pickle.dump(self.terms, f)
+            print(f"Cached culinary data saved to {self.cache_file}")
+        except Exception as e:
+            print(f"Warning: Failed to save cached data: {e}")
 
     def load_usda_data(self):
-        """Load and process the USDA food database.
-        
-        Downloads and processes the USDA Foundation Foods database:
-        1. Downloads and extracts the database ZIP file
-        2. Processes each food item into a CulinaryTerm
-        3. Generates variations for each term
-        4. Falls back to basic ingredients if download fails
-        
-        Note:
-            Uses high confidence (0.9) for USDA-sourced terms
-        """
+        """Load and process the USDA food database."""
         USDA_URL = "https://fdc.nal.usda.gov/fdc-datasets/Foundation.csv.zip"
         
         try:
             # Download and process USDA data
             print("Downloading USDA data...")
-            response = requests.get(USDA_URL)
-            with zipfile.ZipFile(io.BytesIO(response.content)) as z:
+            response = requests.get(USDA_URL, stream=True)
+            total_size = int(response.headers.get('content-length', 0))
+            
+            with tqdm(total=total_size, unit='B', unit_scale=True, desc="Downloading") as pbar:
+                chunks = []
+                for data in response.iter_content(chunk_size=4096):
+                    chunks.append(data)
+                    pbar.update(len(data))
+            
+            content = b''.join(chunks)
+            with zipfile.ZipFile(io.BytesIO(content)) as z:
                 with z.open('food.csv') as f:
                     df = pd.read_csv(f)
                     
-            # Process each food item
-            for _, row in df.iterrows():
+            # Process each food item with progress bar
+            for _, row in tqdm(df.iterrows(), total=len(df), desc="Processing USDA foods"):
                 name = row['description'].lower()
                 category = self._categorize_usda_food(row)
                 
@@ -116,31 +157,21 @@ class CulinaryDataManager:
                 )
                 
         except Exception as e:
-            print(f"Warning: Error loading USDA data: {e}")
+            print(f"\n⚠️  Error loading USDA data: {e}")
             print("Falling back to basic ingredient list...")
             self._load_fallback_ingredients()
 
     def load_wordnet_data(self):
-        """Load culinary terms from WordNet lexical database.
+        """Load culinary terms from WordNet lexical database."""
+        print("Processing WordNet terms...")
+        synsets = [
+            (wn.synset('food.n.01'), 'ingredient'),
+            (wn.synset('cooking.n.01'), 'technique'),
+            (wn.synset('utensil.n.01'), 'equipment')
+        ]
         
-        Extracts culinary terminology from WordNet by traversing relevant synset
-        hierarchies. Processes three main categories:
-        1. Food-related terms (ingredients)
-        2. Cooking-related terms (techniques)
-        3. Utensil-related terms (equipment)
-        
-        Note:
-            Terms from WordNet receive lower confidence (0.7) than USDA terms
-        """
-        # Get food-related synsets
-        food_synset = wn.synset('food.n.01')
-        cooking_synset = wn.synset('cooking.n.01')
-        utensil_synset = wn.synset('utensil.n.01')
-        
-        # Process food terms
-        self._process_synset_hierarchy(food_synset, 'ingredient')
-        self._process_synset_hierarchy(cooking_synset, 'technique')
-        self._process_synset_hierarchy(utensil_synset, 'equipment')
+        for synset, category in tqdm(synsets, desc="Processing WordNet categories"):
+            self._process_synset_hierarchy(synset, category)
 
     def _process_synset_hierarchy(self, synset, category: str, depth: int = 3):
         """Process a WordNet synset and its hyponyms recursively.
@@ -184,19 +215,8 @@ class CulinaryDataManager:
             self._process_synset_hierarchy(hyponym, category, depth - 1)
 
     def enhance_with_nlp(self):
-        """Use spaCy to enhance term recognition and categorization.
-        
-        Applies NLP processing to improve term handling:
-        1. Extracts noun chunks and named entities
-        2. Identifies additional term variations
-        3. Updates confidence scores based on semantic analysis
-        4. Validates category assignments using similarity scoring
-        
-        Note:
-            Confidence scores are averaged with existing scores
-        """
-        # Process each term with spaCy for additional context
-        for term_name, term_data in list(self.terms.items()):
+        """Use spaCy to enhance term recognition and categorization."""
+        for term_name, term_data in tqdm(list(self.terms.items()), desc="Enhancing terms with NLP"):
             doc = self.nlp(term_name)
             
             # Get noun chunks and entities
