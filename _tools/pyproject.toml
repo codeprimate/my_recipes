@@ -1,0 +1,18 @@
+[tool.pytest.ini_options]
+testpaths = ["test"]
+python_files = "test_*.py"
+pythonpath = ["..", "."]
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "recipe-book-tools"
+version = "0.1.0"
+description = "Recipe Book Build Tools"
+requires-python = ">=3.8"
+dependencies = [
+    "pyyaml>=6.0",
+    "pytest>=7.0",
+] 
