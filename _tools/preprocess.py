@@ -41,6 +41,7 @@ class RecipePreprocessor:
         self.metadata = load_metadata(self.metadata_path)
         
         self.errors = []
+        self.console = Console()
 
     def remove_layout_commands(self, content: str) -> str:
         """Remove layout-affecting commands that are handled by the master template"""
@@ -102,15 +103,32 @@ class RecipePreprocessor:
             return False
 
     def process_all(self) -> dict:
-        """Process all recipes that need preprocessing
+        """Process all recipes that need preprocessing"""
+        self.console.print("\n[bold cyan]╔══ Recipe Preprocessing ══╗[/bold cyan]")
         
-        Returns:
-            Dict: Updated build metadata
-        """
-        for recipe_path, recipe_data in self.metadata['recipes'].items():
-            # Check if preprocessing is needed
-            if not recipe_data.get('preprocessed', False):
-                self.process_recipe(recipe_path, recipe_data)
+        # Calculate statistics
+        total_recipes = len(self.metadata['recipes'])
+        needs_processing = sum(1 for r in self.metadata['recipes'].values() 
+                              if not r.get('preprocessed', False))
+        processed = 0
+        
+        with self.console.status("[yellow]Processing recipes...", spinner="dots") as status:
+            for recipe_path, recipe_data in self.metadata['recipes'].items():
+                if not recipe_data.get('preprocessed', False):
+                    try:
+                        status.update(f"[yellow]Processing: {recipe_path}")
+                        if self.process_recipe(recipe_path, recipe_data):
+                            processed += 1
+                            self.console.print(f"[green]✓ Processed:[/green] {recipe_path}")
+                        else:
+                            self.console.print(f"[red]✗ Failed:[/red] {recipe_path}")
+                    except Exception as e:
+                        self.errors.append({
+                            'recipe': recipe_path,
+                            'error': str(e),
+                            'type': type(e).__name__
+                        })
+                        self.console.print(f"[red]✗ Failed:[/red] {recipe_path} ({type(e).__name__})")
 
         # Update metadata with errors
         self.metadata['preprocessing_errors'] = self.errors
@@ -150,28 +168,37 @@ def print_preprocessing_summary(metadata: dict) -> None:
     
     # Calculate statistics
     total_recipes = len(metadata['recipes'])
+    needs_processing = sum(1 for r in metadata['recipes'].values() 
+                          if not r.get('preprocessed', False))
+    processed_count = sum(1 for r in metadata['recipes'].values() 
+                         if r.get('preprocessed'))
     error_count = len(metadata.get('preprocessing_errors', []))
-    processed_count = sum(1 for r in metadata['recipes'].values() if r.get('preprocessed'))
     
-    # Print summary
     console.print("\n[bold]Preprocessing Summary:[/bold]")
     console.print(f"• Total recipes: {total_recipes}")
+    console.print(f"• Needs processing: {needs_processing}")
     console.print(f"• Successfully processed: [green]{processed_count}[/green]")
     console.print(f"• Failed: [red]{error_count}[/red]\n")
 
-    # Create recipes table
-    recipe_table = Table(title="Recipe Processing Status")
-    recipe_table.add_column("Recipe", style="cyan")
-    recipe_table.add_column("Section")
-    recipe_table.add_column("Status", justify="center")
+    if needs_processing > 0:
+        # Create recipes table
+        recipe_table = Table(title="Processing Status")
+        recipe_table.add_column("Recipe", style="cyan")
+        recipe_table.add_column("Section")
+        recipe_table.add_column("Status", justify="center")
+        
+        for recipe_path, recipe_data in metadata['recipes'].items():
+            if not recipe_data.get('preprocessed', False):
+                status = "[green]✓ Processed[/green]" if recipe_data.get('preprocessed') else "[red]✗ Failed[/red]"
+                recipe_table.add_row(
+                    recipe_path,
+                    recipe_data['section'],
+                    status
+                )
+        
+        console.print(recipe_table)
     
-    for recipe_path, recipe_data in metadata['recipes'].items():
-        status = "[green]Processed[/green]" if recipe_data.get('preprocessed') else "[yellow]Pending[/yellow]"
-        recipe_table.add_row(recipe_path, recipe_data['section'], status)
-    
-    console.print(recipe_table)
-    
-    # Print errors if any
+    # Print errors table if any exist
     if error_count > 0:
         error_table = Table(title="\nErrors Encountered")
         error_table.add_column("Recipe", style="cyan")
@@ -193,16 +220,19 @@ def main():
     args = parse_args()
     
     try:
-        preprocessor = RecipePreprocessor(
-            config_path=args.config,
-            build_dir=args.build_dir
-        )
+        console = Console()
+        with console.status("[yellow]Initializing preprocessor...", spinner="dots"):
+            preprocessor = RecipePreprocessor(
+                config_path=args.config,
+                build_dir=args.build_dir
+            )
         
         metadata = preprocessor.process_all()
         print_preprocessing_summary(metadata)
         
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        console = Console(stderr=True)
+        console.print(f"[red]Error: {e}[/red]", file=sys.stderr)
         sys.exit(1)
 
 
