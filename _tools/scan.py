@@ -77,23 +77,24 @@ class RecipeScanner:
     - Scanning continues even if errors occur
     """
 
-    def __init__(self, config_path: str = "book.yml", build_dir: str = "_build"):
+    def __init__(self, config_path: str = "_tools/book.yml"):
         """Initialize scanner with configuration
         Args:
             config_path: Path to book.yml configuration (relative to project root)
-            build_dir: Path to build directory (relative to project root)
         """
         self.config_path = Path(config_path)
-        self.build_dir = Path(build_dir)
-        self.metadata_path = self.build_dir / "metadata.yml"
         
         # Load and store configuration
         self.config = load_config(self.config_path)
         
+        # Get build directory from config
+        self.build_dir = Path(self.config['build']['output_dir'])
+        self.metadata_path = self.build_dir / "metadata.yml"
+        
         # Create build directory if it doesn't exist
         self.build_dir.mkdir(exist_ok=True)
         
-        self.errors = []  # Add error tracking
+        self.errors = []
 
     def scan_content_directories(self) -> Dict[str, str]:
         """Scan for content directories and process section names
@@ -274,11 +275,6 @@ def parse_args():
         default="_tools/book.yml",
         help="Path to configuration file (default: _tools/book.yml)"
     )
-    parser.add_argument(
-        "--build-dir",
-        default="_build",
-        help="Build directory path (default: _build)"
-    )
     return parser.parse_args()
 
 
@@ -344,10 +340,7 @@ def main():
     args = parse_args()
     
     try:
-        scanner = RecipeScanner(
-            config_path=args.config,
-            build_dir=args.build_dir
-        )
+        scanner = RecipeScanner(config_path=args.config)
         
         print("* Scanning for recipes...")
         metadata = scanner.scan()
