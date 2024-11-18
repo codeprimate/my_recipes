@@ -36,11 +36,14 @@ class RecipeBookBuilder:
         # Convert string paths to Path objects
         self.config_path = Path(config_path).resolve()
         self.build_dir = Path(build_dir).resolve()
+        print(f"Build directory: {self.build_dir}")
         self.console = Console()
         
         # Ensure config file exists
         if not self.config_path.exists():
             raise FileNotFoundError(f"Configuration file not found: {self.config_path}")
+        else:
+            print(f"Config path: {self.config_path}")
         
         # Load configuration
         self.config = load_config(self.config_path)
@@ -49,10 +52,9 @@ class RecipeBookBuilder:
         self.build_dir.mkdir(exist_ok=True)
         
         # Initialize pipeline components
-        self.scanner = RecipeScanner(config_path, str(self.build_dir))
+        self.scanner = RecipeScanner(config_path)
         self.extractor = RecipeExtractor(config_path, str(self.build_dir))
         self.preprocessor = RecipePreprocessor(config_path, str(self.build_dir))
-        # Convert config_path to Path object before passing to BookCompiler
         self.compiler = BookCompiler(Path(config_path))
         
         # Track build status
