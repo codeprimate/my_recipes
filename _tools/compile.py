@@ -63,28 +63,26 @@ class BookCompiler:
         '.sty'
     ]
 
-    def __init__(self, config_path: Path, metadata_path: Path):
-        """Initialize compiler with configuration and metadata
+    def __init__(self, config_path: Path):
+        """Initialize compiler with configuration
         
         Args:
             config_path: Path to book.yml configuration
-            metadata_path: Path to build metadata
             
-        The compiler requires both configuration and metadata to:
+        The compiler requires configuration to:
         - Load book settings and style preferences
         - Track build state and recipe processing status
         - Maintain consistent output locations
         
         Side Effects:
             - Initializes self.config from config_path
-            - Initializes self.metadata from metadata_path
             - Sets up build and template directories
             - Creates Jinja environment with specific settings
             - Initializes empty errors list
         """
         self.config = load_config(config_path)
-        self.metadata = load_metadata(metadata_path)
         self.build_dir = Path(self.config['build']['output_dir']).resolve()
+        self.metadata = load_metadata(self.build_dir / "metadata.yml")
         self.template_dir = config_path.parent
         self.errors = []
 
@@ -502,9 +500,8 @@ def main():
     # Use absolute paths resolved from project root
     project_root = Path(__file__).parent.parent
     config_path = project_root / '_tools/book.yml'
-    metadata_path = project_root / '_build/metadata.yml'
     
-    compiler = BookCompiler(config_path, metadata_path)
+    compiler = BookCompiler(config_path)
     
     try:
         pdf_path = compiler.compile()
