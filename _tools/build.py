@@ -53,7 +53,7 @@ class RecipeBookBuilder:
         
         # Initialize pipeline components
         self.scanner = RecipeScanner(config_path)
-        self.extractor = RecipeExtractor(config_path, str(self.build_dir))
+        self.extractor = RecipeExtractor(config_path)
         self.preprocessor = RecipePreprocessor(config_path, str(self.build_dir))
         self.compiler = BookCompiler(Path(config_path))
         
