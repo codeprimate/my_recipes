@@ -220,21 +220,27 @@ class RecipeExtractor:
                 - Recipe titles
                 - Any extraction errors encountered
         """
-        for recipe_path, recipe_data in self.metadata['recipes'].items():
-            # Only process if explicitly marked as changed
-            if recipe_data.get('changed', False):
-                try:
-                    content, packages, title = self.extract_content(Path(recipe_path))
-                    extracted_path = self.save_extracted_content(Path(recipe_path), content)
-                    self.update_metadata(recipe_path, packages, extracted_path, title)
-                    
-                except Exception as e:
-                    self.errors.append({
-                        'recipe': recipe_path,
-                        'error': str(e),
-                        'type': type(e).__name__
-                    })
-                    print(f"Error processing {recipe_path}: {e}", file=sys.stderr)
+        console = Console()
+        console.print("\n[bold cyan]╔══ Content Extraction ══╗[/bold cyan]")
+        
+        with console.status("[yellow]Processing recipes...", spinner="dots") as status:
+            for recipe_path, recipe_data in self.metadata['recipes'].items():
+                # Only process if explicitly marked as changed
+                if recipe_data.get('changed', False):
+                    try:
+                        status.update(f"[yellow]Extracting: {recipe_path}")
+                        content, packages, title = self.extract_content(Path(recipe_path))
+                        extracted_path = self.save_extracted_content(Path(recipe_path), content)
+                        self.update_metadata(recipe_path, packages, extracted_path, title)
+                        console.print(f"[green]✓ Extracted:[/green] {recipe_path}")
+                        
+                    except Exception as e:
+                        self.errors.append({
+                            'recipe': recipe_path,
+                            'error': str(e),
+                            'type': type(e).__name__
+                        })
+                        console.print(f"[red]✗ Failed:[/red] {recipe_path} ({type(e).__name__})")
 
         # Add errors to metadata
         self.metadata['extraction_errors'] = self.errors
@@ -267,25 +273,35 @@ def print_extraction_summary(metadata: dict) -> None:
     
     # Print summary statistics
     total_recipes = len(metadata['recipes'])
+    changed_recipes = sum(1 for r in metadata['recipes'].values() if r.get('changed', False))
     error_count = len(metadata.get('extraction_errors', []))
     success_count = sum(1 for r in metadata['recipes'].values() if r.get('extracted_body'))
     
     console.print("\n[bold]Extraction Summary:[/bold]")
     console.print(f"• Total recipes: {total_recipes}")
+    console.print(f"• Changed recipes: {changed_recipes}")
     console.print(f"• Successfully processed: [green]{success_count}[/green]")
     console.print(f"• Failed: [red]{error_count}[/red]\n")
 
-    # Create recipes table
-    recipe_table = Table(title="Recipes Processed")
-    recipe_table.add_column("Recipe", style="cyan")
-    recipe_table.add_column("Section")
-    recipe_table.add_column("Status", justify="center")
-    
-    for recipe_path, recipe_data in metadata['recipes'].items():
-        status = "[green]Extracted[/green]" if recipe_data.get('extracted_body') else "[yellow]Skipped[/yellow]"
-        recipe_table.add_row(recipe_path, recipe_data['section'], status)
-    
-    console.print(recipe_table)
+    if changed_recipes > 0:
+        # Create recipes table
+        recipe_table = Table(title="Changed Recipes")
+        recipe_table.add_column("Recipe", style="cyan")
+        recipe_table.add_column("Section")
+        recipe_table.add_column("Status", justify="center")
+        recipe_table.add_column("Title")
+        
+        for recipe_path, recipe_data in metadata['recipes'].items():
+            if recipe_data.get('changed', False):
+                status = "[green]✓ Extracted[/green]" if recipe_data.get('extracted_body') else "[red]✗ Failed[/red]"
+                recipe_table.add_row(
+                    recipe_path,
+                    recipe_data['section'],
+                    status,
+                    recipe_data['title'] if recipe_data.get('title') else ""
+                )
+        
+        console.print(recipe_table)
     
     # Print errors table if any exist
     if error_count > 0:

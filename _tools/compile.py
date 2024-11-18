@@ -94,6 +94,8 @@ class BookCompiler:
             lstrip_blocks=True
         )
 
+        self.console = Console()
+
     def validate_build_state(self) -> bool:
         """Validate build state and check if recipes need reprocessing
         
@@ -268,7 +270,7 @@ class BookCompiler:
         
         return template_vars
 
-    def render_template(self) -> str:
+    def render_template(self, packages: List[str]) -> str:
         """Render the LaTeX template
         
         Returns:
@@ -308,26 +310,7 @@ class BookCompiler:
             raise
 
     def run_latex_compiler(self, tex_path: Path, output_path: Path) -> bool:
-        """Run LaTeX compiler to generate PDF output
-        
-        Executes LaTeX compiler twice to handle:
-        1. Initial content and references
-        2. Table of contents and cross-references
-        
-        Args:
-            tex_path: Path to input .tex file
-            output_path: Desired PDF output location
-        
-        Returns:
-            bool: True if compilation succeeded, False if errors occurred
-            
-        Side Effects:
-            - Creates PDF at output_path
-            - Creates empty filename.sty if it doesn't exist
-            - Adds compilation errors to self.errors
-            - Prints LaTeX compiler output on error
-            - Removes auxiliary files after successful compilation
-        """
+        """Run LaTeX compiler to generate PDF output"""
         compiler = self.config.get('latex_compiler', 'xelatex')
         
         try:
@@ -338,36 +321,39 @@ class BookCompiler:
             
             # Run compiler twice for TOC/references
             for run in range(2):
-                print(f"LaTeX compilation run {run + 1}/2")
-                result = subprocess.run(
-                    [compiler, '-interaction=nonstopmode', str(tex_path)],
-                    cwd=self.build_dir,
-                    capture_output=True,
-                    text=True
-                )
+                self.console.print(f"\n[cyan]LaTeX Pass {run + 1}/2[/cyan]")
+                with self.console.status("[bold yellow]Compiling...", spinner="dots"):
+                    result = subprocess.run(
+                        [compiler, '-interaction=nonstopmode', str(tex_path)],
+                        cwd=self.build_dir,
+                        capture_output=True,
+                        text=True
+                    )
                 
-                # Check for actual error indicators in the output rather than just return code
+                # Check for actual error indicators in the output
                 if "Fatal error occurred" in result.stdout or "Emergency stop" in result.stdout:
+                    self.console.print("[red]✗ Compilation failed[/red]")
                     error_message = result.stderr if result.stderr else "LaTeX compilation failed"
                     self.errors.append({
                         'phase': 'latex',
                         'error': error_message
                     })
 
-                    print("\nLaTeX Compiler Output:")
-                    print(result.stdout)
-                    
+                    self.console.print("\n[bold red]LaTeX Compiler Output:[/bold red]")
+                    self.console.print(result.stdout)
                     return False
+                
+                self.console.print("[green]✓ Pass completed successfully[/green]")
 
-
-            
-            print("Cleaning up auxiliary files...")
+            self.console.print("\n[yellow]Cleaning up auxiliary files...[/yellow]")
             # Clean up auxiliary files
-            for ext in self.AUXILIARY_EXTENSIONS:
-                aux_file = tex_path.with_suffix(ext)
-                if aux_file.exists():
-                    aux_file.unlink()
+            with self.console.status("[dim]Removing temporary files", spinner="dots"):
+                for ext in self.AUXILIARY_EXTENSIONS:
+                    aux_file = tex_path.with_suffix(ext)
+                    if aux_file.exists():
+                        aux_file.unlink()
             
+            self.console.print("[green]✓ Cleanup complete[/green]")
             return True
             
         except subprocess.SubprocessError as e:
@@ -451,82 +437,44 @@ class BookCompiler:
             console.print(error_table)
 
     def compile(self) -> Optional[Path]:
-        """Execute full compilation pipeline
+        """Compile the recipe book into final PDF"""
         
-        Pipeline steps:
-        1. Validate build state and dependencies
-        2. Consolidate required LaTeX packages
-        3. Render template with recipe content
-        4. Generate index if configured
-        5. Run LaTeX compiler
+        self.console.print("\n[bold cyan]╔══ Book Compilation ══╗[/bold cyan]")
         
-        Returns:
-            Path: Path to compiled PDF on success
-            None: If any step fails
+        # Validate build state
+        with self.console.status("[yellow]Validating build state...", spinner="dots") as status:
+            if not self.validate_build_state():
+                self.console.print("[red]✗ Build state validation failed[/red]")
+                return None
+            self.console.print("[green]✓ Build state validated[/green]")
             
-        Raises:
-            ValueError: If build validation fails
-            
-        Side Effects:
-            - Creates intermediate .tex files
-            - Generates final PDF
-            - Tracks errors in self.errors
-        """
-        self.errors = []  # Reset errors
-        
-        print("Validating build state...")
-        self.validate_build_state()
-
-        try:
             # Consolidate packages
-            print("Consolidating LaTeX packages...")
+            status.update("[yellow]Consolidating LaTeX packages...")
             packages = self.consolidate_packages()
+            self.console.print(f"[green]✓ Found {len(packages)} required packages[/green]")
             
             # Render template
-            print("Rendering LaTeX template...")
-            try:
-                rendered_content = self.render_template()
-            except jinja2.TemplateError as e:
-                self.errors.append({
-                    'phase': 'template',
-                    'error': str(e)
-                })
-                return None
+            status.update("[yellow]Rendering LaTeX template...")
+            content = self.render_template(packages)
+            self.console.print("[green]✓ Template rendered[/green]")
             
-            # Save rendered content
-            print("Saving rendered content...")
-            tex_path = self.build_dir / 'book.tex'
-            tex_path.write_text(rendered_content, encoding='utf-8')
-            
-            # Add indexing step here, after template rendering but before LaTeX compilation
-            if self.config['style'].get('include_index'):
-                print("Generating index...")
-                try:
-                    indexer = CookbookIndexer()
-                    indexed_tex_path = self.build_dir / 'book_indexed.tex'
-                    indexer.process_cookbook(tex_path, indexed_tex_path)
-                    tex_path = indexed_tex_path  # Use indexed version for compilation
-                except Exception as e:
-                    self.errors.append({
-                        'phase': 'indexing',
-                        'error': str(e)
-                    })
-                    return None
-            
-            # Run LaTeX compiler
-            print("\nRunning LaTeX compiler...")
-            pdf_path = self.build_dir / 'book.pdf'
-            if not self.run_latex_compiler(tex_path, pdf_path):
-                return None
-            
-            return pdf_path
-
-        except Exception as e:
-            self.errors.append({
-                'phase': 'compilation',
-                'error': str(e)
-            })
-            raise
+            # Save content
+            status.update("[yellow]Saving rendered content...")
+            tex_path = self.build_dir / "book.tex"
+            tex_path.write_text(content)
+            self.console.print(f"[green]✓ Content saved to {tex_path.name}[/green]")
+        
+        # Run LaTeX compiler
+        self.console.print("\n[bold cyan]╔══ LaTeX Compilation ══╗[/bold cyan]")
+        output_path = self.build_dir / "book.pdf"
+        if not self.run_latex_compiler(tex_path, output_path):
+            return None
+        
+        if output_path.exists():
+            self.console.print(f"\n[green bold]✓ Successfully compiled: {output_path}[/green bold]")
+            return output_path
+        
+        return None
 
 def main():
     """Command-line entry point for recipe book compilation
