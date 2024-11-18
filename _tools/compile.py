@@ -319,7 +319,7 @@ class BookCompiler:
             
             # Run compiler twice for TOC/references
             for run in range(2):
-                self.console.print(f"\n[cyan]LaTeX Pass {run + 1}/2[/cyan]")
+                self.console.print(f"[cyan]LaTeX Pass {run + 1}/2[/cyan]")
                 with self.console.status("[bold yellow]Compiling...", spinner="dots"):
                     result = subprocess.run(
                         [compiler, '-interaction=nonstopmode', str(tex_path)],
@@ -343,7 +343,6 @@ class BookCompiler:
                 
                 self.console.print("[green]✓ Pass completed successfully[/green]")
 
-            self.console.print("\n[yellow]Cleaning up auxiliary files...[/yellow]")
             # Clean up auxiliary files
             with self.console.status("[dim]Removing temporary files", spinner="dots"):
                 for ext in self.AUXILIARY_EXTENSIONS:
