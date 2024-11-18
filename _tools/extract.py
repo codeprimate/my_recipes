@@ -67,18 +67,23 @@ class RecipeExtractor:
         errors (list): List of extraction errors encountered
     """
 
-    def __init__(self, config_path: str = "_tools/book.yml", build_dir: str = "_build") -> None:
+    def __init__(self, config_path: str = "_tools/book.yml") -> None:
         """Initialize extractor with configuration.
 
         Args:
             config_path: Path to book.yml configuration file
-            build_dir: Path to build directory for extracted content
 
         Raises:
             FileNotFoundError: If config file cannot be found
             yaml.YAMLError: If config file is invalid
         """
         self.config_path = Path(config_path)
+        
+        # Load config and metadata
+        self.config = load_config(self.config_path)
+        
+        # Ensure we get a string path from config before converting to Path
+        build_dir = str(self.config['build']['output_dir'])
         self.build_dir = Path(build_dir)
         self.metadata_path = self.build_dir / "metadata.yml"
         self.bodies_dir = self.build_dir / "bodies"
@@ -86,12 +91,8 @@ class RecipeExtractor:
         # Create build directories if they don't exist
         self.bodies_dir.mkdir(parents=True, exist_ok=True)
         
-        # Load config and metadata
-        self.config = load_config(self.config_path)
+        # Load metadata
         self.metadata = load_metadata(self.metadata_path)
-        
-        # Ensure build output directory matches instance setting
-        self.config['build']['output_dir'] = str(self.build_dir)
         self.errors = []
 
     def extract_content(self, recipe_path: Path) -> Tuple[str, Set[str], Optional[str]]:
@@ -325,8 +326,7 @@ def main():
     
     try:
         extractor = RecipeExtractor(
-            config_path=args.config,
-            build_dir=args.build_dir
+            config_path=args.config
         )
         
         print("Extracting recipe content...")
