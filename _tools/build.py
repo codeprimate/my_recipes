@@ -138,6 +138,17 @@ class RecipeBookBuilder:
                 self.errors.extend([{'stage': 'compile', **e} for e in self.compiler.errors])
                 return None
 
+            # Stage 5: Copy PDF to project root
+            # Copy PDF to project root if compilation succeeded
+            self.console.print("\n[bold blue]Stage 5: Copying PDF to project root...[/bold blue]")
+            if pdf_path and pdf_path.exists():
+                import shutil
+                root_pdf = Path(pdf_path.name)  # Create path in project root
+                shutil.copy2(pdf_path, root_pdf)
+                self.console.print(f"[dim]Copied PDF to project root: {root_pdf}[/dim]")
+            else:
+                self.console.print("[red]Failed to copy PDF to project root[/red]")
+
         except Exception as e:
             self.errors.append({
                 'stage': 'build',
@@ -164,7 +175,8 @@ class RecipeBookBuilder:
         self.console.print(f"Duration: {duration.total_seconds():.1f} seconds")
         
         if pdf_path:
-            self.console.print(f"Output: [green]{pdf_path}[/green]")
+            root_pdf = Path(pdf_path.name)
+            self.console.print(f"Output: [green]{root_pdf}[/green]")
         else:
             self.console.print("[red]Build failed[/red]")
 
