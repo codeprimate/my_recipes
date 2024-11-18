@@ -237,13 +237,13 @@ extraction_errors:  # Tracks any errors during extraction
 
 Basic build:
 ```bash
-python _tools/build.py [--config path/to/config] [--build-dir path/to/build]
+python _tools/build.py [--config path/to/config]
 ```
 
 Individual steps can be run for development:
 ```bash
-python _tools/scan.py [--config path/to/config] [--build-dir path/to/build]
-python _tools/extract.py [--config path/to/config] [--build-dir path/to/build]
-python _tools/preprocess.py [--config path/to/config] [--build-dir path/to/build]
-python _tools/compile.py [--config path/to/config] [--build-dir path/to/build]
+python _tools/scan.py [--config path/to/config]
+python _tools/extract.py [--config path/to/config]
+python _tools/preprocess.py [--config path/to/config]
+python _tools/compile.py [--config path/to/config]
 ```
