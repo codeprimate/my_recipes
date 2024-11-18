@@ -51,12 +51,6 @@ class RecipeBookBuilder:
         # Create build directory
         self.build_dir.mkdir(exist_ok=True)
         
-        # Initialize pipeline components
-        self.scanner = RecipeScanner(config_path)
-        self.extractor = RecipeExtractor(config_path)
-        self.preprocessor = RecipePreprocessor(config_path)
-        self.compiler = BookCompiler(Path(config_path))
-        
         # Track build status
         self.errors = []
         self.start_time = None
@@ -75,7 +69,7 @@ class RecipeBookBuilder:
                     shutil.rmtree(item)
             self.console.print("[dim]Build directory cleaned[/dim]")
 
-    def build(self, clean: bool = False) -> Optional[Path]:
+    def build(self, clean: bool = True) -> Optional[Path]:
         """Execute complete build pipeline
         
         Args:
@@ -102,6 +96,7 @@ class RecipeBookBuilder:
             # Stage 1: Scan
             stage_start = datetime.now()
             self.console.print("\n[bold blue]Stage 1: Scanning content...[/bold blue]")
+            self.scanner = RecipeScanner(self.config_path)
             metadata = self.scanner.scan()
             self.stage_times['scan'] = datetime.now() - stage_start
             self.console.print(f"[dim]Scan completed in {self.stage_times['scan'].total_seconds():.1f}s[/dim]")
@@ -112,6 +107,7 @@ class RecipeBookBuilder:
             # Stage 2: Extract
             stage_start = datetime.now()
             self.console.print("\n[bold blue]Stage 2: Extracting content...[/bold blue]")
+            self.extractor = RecipeExtractor(self.config_path)
             metadata = self.extractor.extract_all()
             self.stage_times['extract'] = datetime.now() - stage_start
             self.console.print(f"[dim]Extraction completed in {self.stage_times['extract'].total_seconds():.1f}s[/dim]")
@@ -122,6 +118,7 @@ class RecipeBookBuilder:
             # Stage 3: Preprocess
             stage_start = datetime.now()
             self.console.print("\n[bold blue]Stage 3: Preprocessing content...[/bold blue]")
+            self.preprocessor = RecipePreprocessor(self.config_path)
             metadata = self.preprocessor.process_all()
             self.stage_times['preprocess'] = datetime.now() - stage_start
             self.console.print(f"[dim]Preprocessing completed in {self.stage_times['preprocess'].total_seconds():.1f}s[/dim]")
@@ -132,6 +129,7 @@ class RecipeBookBuilder:
             # Stage 4: Compile
             stage_start = datetime.now()
             self.console.print("\n[bold blue]Stage 4: Compiling book...[/bold blue]")
+            self.compiler = BookCompiler(self.config_path)
             pdf_path = self.compiler.compile()
             self.stage_times['compile'] = datetime.now() - stage_start
             self.console.print(f"[dim]Compilation completed in {self.stage_times['compile'].total_seconds():.1f}s[/dim]")
@@ -223,7 +221,7 @@ def main():
             build_dir=args.build_dir
         )
         
-        pdf_path = builder.build(clean=args.clean)
+        pdf_path = builder.build()
         
         # Set exit code based on build success
         sys.exit(0 if pdf_path else 1)
