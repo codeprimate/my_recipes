@@ -24,20 +24,21 @@ from rich.console import Console
 from rich.table import Table
 
 class RecipePreprocessor:
-    def __init__(self, config_path: str = "_tools/book.yml", build_dir: str = "_build"):
+    def __init__(self, config_path: str = "_tools/book.yml"):
         """Initialize preprocessor with configuration
         
         Args:
             config_path: Path to book.yml configuration
-            build_dir: Path to build directory
         """
         self.config_path = Path(config_path)
-        self.build_dir = Path(build_dir)
+        self.config = load_config(self.config_path)
+        
+        # Get build directory from config
+        self.build_dir = Path(self.config['build']['output_dir'])
         self.metadata_path = self.build_dir / "metadata.yml"
         self.bodies_dir = self.build_dir / "bodies"
         
-        # Load config and metadata
-        self.config = load_config(self.config_path)
+        # Load metadata
         self.metadata = load_metadata(self.metadata_path)
         
         self.errors = []
@@ -150,11 +151,6 @@ def parse_args():
         default="_tools/book.yml",
         help="Path to configuration file (default: _tools/book.yml)"
     )
-    parser.add_argument(
-        "--build-dir",
-        default="_build",
-        help="Build directory path (default: _build)"
-    )
     return parser.parse_args()
 
 
@@ -220,13 +216,7 @@ def main():
     args = parse_args()
     
     try:
-        console = Console()
-        with console.status("[yellow]Initializing preprocessor...", spinner="dots"):
-            preprocessor = RecipePreprocessor(
-                config_path=args.config,
-                build_dir=args.build_dir
-            )
-        
+        preprocessor = RecipePreprocessor(config_path=args.config)
         metadata = preprocessor.process_all()
         print_preprocessing_summary(metadata)
         
