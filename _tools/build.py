@@ -26,27 +26,28 @@ from helpers import load_config
 class RecipeBookBuilder:
     """Orchestrates the complete recipe book build process"""
 
-    def __init__(self, config_path: str = "_tools/book.yml", build_dir: str = "_build"):
-        """Initialize builder with configuration
+    def __init__(self, config_path: str = "_tools/book.yml") -> None:
+        """Initialize builder with configuration.
         
         Args:
-            config_path: Path to book.yml configuration
-            build_dir: Path to build directory
+            config_path: Path to book.yml configuration file
+        
+        Raises:
+            FileNotFoundError: If config file cannot be found
+            yaml.YAMLError: If config file is invalid
         """
-        # Convert string paths to Path objects
-        self.config_path = Path(config_path).resolve()
+        # Convert string path to Path object
+        self.config_path = Path(config_path)
+        
+        # Load config
+        self.config = load_config(self.config_path)
+        
+        # Get build directory from config and convert to Path
+        build_dir = str(self.config['build']['output_dir'])
         self.build_dir = Path(build_dir).resolve()
         print(f"Build directory: {self.build_dir}")
+        
         self.console = Console()
-        
-        # Ensure config file exists
-        if not self.config_path.exists():
-            raise FileNotFoundError(f"Configuration file not found: {self.config_path}")
-        else:
-            print(f"Config path: {self.config_path}")
-        
-        # Load configuration
-        self.config = load_config(self.config_path)
         
         # Create build directory
         self.build_dir.mkdir(exist_ok=True)
@@ -55,7 +56,7 @@ class RecipeBookBuilder:
         self.errors = []
         self.start_time = None
         self.end_time = None
-        self.stage_times = {}  # Add this to track stage durations
+        self.stage_times = {}
 
     def clean_build_dir(self) -> None:
         """Remove all contents of the build directory"""
@@ -217,8 +218,7 @@ def main():
     
     try:
         builder = RecipeBookBuilder(
-            config_path=args.config,
-            build_dir=args.build_dir
+            config_path=args.config
         )
         
         pdf_path = builder.build()
