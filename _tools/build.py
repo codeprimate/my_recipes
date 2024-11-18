@@ -53,7 +53,7 @@ class RecipeBookBuilder:
         self.extractor = RecipeExtractor(config_path, str(self.build_dir))
         self.preprocessor = RecipePreprocessor(config_path, str(self.build_dir))
         # Convert config_path to Path object before passing to BookCompiler
-        self.compiler = BookCompiler(Path(config_path), Path(self.build_dir / "metadata.yml").resolve())
+        self.compiler = BookCompiler(Path(config_path))
         
         # Track build status
         self.errors = []
