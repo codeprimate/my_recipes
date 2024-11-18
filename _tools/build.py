@@ -13,7 +13,7 @@ import sys
 import logging
 from pathlib import Path
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 from rich.console import Console
 from rich.table import Table
 
@@ -59,9 +59,25 @@ class RecipeBookBuilder:
         self.errors = []
         self.start_time = None
         self.end_time = None
+        self.stage_times = {}  # Add this to track stage durations
 
-    def build(self) -> Optional[Path]:
+    def clean_build_dir(self) -> None:
+        """Remove all contents of the build directory"""
+        if self.build_dir.exists():
+            self.console.print("\n[bold yellow]Cleaning build directory...[/bold yellow]")
+            for item in self.build_dir.iterdir():
+                if item.is_file():
+                    item.unlink()
+                elif item.is_dir():
+                    import shutil
+                    shutil.rmtree(item)
+            self.console.print("[dim]Build directory cleaned[/dim]")
+
+    def build(self, clean: bool = False) -> Optional[Path]:
         """Execute complete build pipeline
+        
+        Args:
+            clean: If True, clean build directory before building
         
         Returns:
             Optional[Path]: Path to compiled PDF if successful, None if failed
@@ -74,34 +90,49 @@ class RecipeBookBuilder:
         
         Each stage is executed only if previous stages succeed.
         """
+        if clean:
+            self.clean_build_dir()
+            
         self.start_time = datetime.now()
         pdf_path = None
 
         try:
             # Stage 1: Scan
+            stage_start = datetime.now()
             self.console.print("\n[bold blue]Stage 1: Scanning content...[/bold blue]")
             metadata = self.scanner.scan()
+            self.stage_times['scan'] = datetime.now() - stage_start
+            self.console.print(f"[dim]Scan completed in {self.stage_times['scan'].total_seconds():.1f}s[/dim]")
             if self.scanner.errors:
                 self.errors.extend([{'stage': 'scan', **e} for e in self.scanner.errors])
                 return None
 
             # Stage 2: Extract
+            stage_start = datetime.now()
             self.console.print("\n[bold blue]Stage 2: Extracting content...[/bold blue]")
             metadata = self.extractor.extract_all()
+            self.stage_times['extract'] = datetime.now() - stage_start
+            self.console.print(f"[dim]Extraction completed in {self.stage_times['extract'].total_seconds():.1f}s[/dim]")
             if self.extractor.errors:
                 self.errors.extend([{'stage': 'extract', **e} for e in self.extractor.errors])
                 return None
 
             # Stage 3: Preprocess
+            stage_start = datetime.now()
             self.console.print("\n[bold blue]Stage 3: Preprocessing content...[/bold blue]")
             metadata = self.preprocessor.process_all()
+            self.stage_times['preprocess'] = datetime.now() - stage_start
+            self.console.print(f"[dim]Preprocessing completed in {self.stage_times['preprocess'].total_seconds():.1f}s[/dim]")
             if self.preprocessor.errors:
                 self.errors.extend([{'stage': 'preprocess', **e} for e in self.preprocessor.errors])
                 return None
 
             # Stage 4: Compile
+            stage_start = datetime.now()
             self.console.print("\n[bold blue]Stage 4: Compiling book...[/bold blue]")
             pdf_path = self.compiler.compile()
+            self.stage_times['compile'] = datetime.now() - stage_start
+            self.console.print(f"[dim]Compilation completed in {self.stage_times['compile'].total_seconds():.1f}s[/dim]")
             if self.compiler.errors:
                 self.errors.extend([{'stage': 'compile', **e} for e in self.compiler.errors])
                 return None
@@ -166,6 +197,11 @@ def parse_args():
         default="_build",
         help="Build directory path (default: _build)"
     )
+    parser.add_argument(
+        "--clean",
+        action="store_true",
+        help="Clean build directory before building"
+    )
     return parser.parse_args()
 
 
@@ -185,7 +221,7 @@ def main():
             build_dir=args.build_dir
         )
         
-        pdf_path = builder.build()
+        pdf_path = builder.build(clean=args.clean)
         
         # Set exit code based on build success
         sys.exit(0 if pdf_path else 1)
