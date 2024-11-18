@@ -257,8 +257,8 @@ class BookCompiler:
             section_recipes = [
                 {
                     **recipe,
-                    # Just escape spaces in the path, no need to modify _build prefix
-                    'extracted_body': recipe['extracted_body'].replace(' ', '\ ')
+                    # Only escape spaces if extracted_body is a string
+                    'extracted_body': recipe['extracted_body'].replace(' ', '\ ') if isinstance(recipe['extracted_body'], str) else recipe['extracted_body']
                 }
                 for recipe in self.metadata['recipes'].values()
                 if recipe['section'] == section
