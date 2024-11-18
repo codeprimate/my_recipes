@@ -21,6 +21,11 @@
 {% endif %}
 {% endfor %}
 
+{% if index %}
+\usepackage{makeidx}  % Load makeidx package first
+\makeindex  % Initialize indexing
+{% endif %}
+
 \title{ {{- title -}} }
 \author{ {{- authorship.author -}} }
 \date{ {{- authorship.date -}} }
