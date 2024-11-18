@@ -82,19 +82,13 @@ class RecipeScanner:
         Args:
             config_path: Path to book.yml configuration (relative to project root)
         """
-        self.config_path = Path(config_path)
-        
-        # Load and store configuration
-        self.config = load_config(self.config_path)
-        
-        # Get build directory from config
-        self.build_dir = Path(self.config['build']['output_dir'])
-        self.metadata_path = self.build_dir / "metadata.yml"
-        
-        # Create build directory if it doesn't exist
-        self.build_dir.mkdir(exist_ok=True)
-        
         self.errors = []
+        self.config_path = Path(config_path)
+        self.config = load_config(self.config_path)
+        self.build_dir = Path(self.config['build']['output_dir'])
+        self.build_dir.mkdir(exist_ok=True)
+        self.metadata_path = self.build_dir / "metadata.yml"
+        self.console = Console()
 
     def scan_content_directories(self) -> Dict[str, str]:
         """Scan for content directories and process section names
@@ -156,7 +150,6 @@ class RecipeScanner:
             
             for recipe_file in section_path.glob('*.tex'):
                 relative_path = str(recipe_file.relative_to('.'))
-                
                 recipes[relative_path] = {
                     'section': section_dir,
                     'mtime': datetime.fromtimestamp(recipe_file.stat().st_mtime).isoformat(),
@@ -188,7 +181,6 @@ class RecipeScanner:
             else:
                 # New file, mark as changed
                 changed = True
-            
             updated[path]['changed'] = changed
             
             # Reset preprocessing flag if changed
@@ -225,7 +217,7 @@ class RecipeScanner:
         
         # Save updated metadata
         with open(self.metadata_path, 'w', encoding='utf-8') as f:
-            yaml.dump(metadata, f, default_flow_style=False)
+                yaml.dump(metadata, f, default_flow_style=False)
         
         return metadata
 
@@ -237,28 +229,35 @@ class RecipeScanner:
         sections = {}
         recipes = {}
         
+        self.console.print("\n[bold cyan]╔══ Content Scanning ══╗[/bold cyan]")
+        
         try:
-            sections = self.scan_content_directories()
+            with self.console.status("[yellow]Scanning content directories...", spinner="dots") as status:
+                sections = self.scan_content_directories()
+                self.console.print(f"[green]✓ Found {len(sections)} sections[/green]")
+                
+                status.update("[yellow]Scanning for recipe files...")
+                recipes = self.scan_recipe_files(sections)
+                self.console.print(f"[green]✓ Found {len(recipes)} recipes[/green]")
+                
+                status.update("[yellow]Detecting changes...")
+                existing = load_metadata(self.metadata_path)
+                recipes = self.detect_changes(existing, recipes)
+                changed_count = sum(1 for r in recipes.values() if r.get('changed', False))
+                self.console.print(f"[green]✓ Detected {changed_count} changed recipes[/green]")
+                
+                status.update("[yellow]Updating build metadata...")
+                metadata = self.update_metadata(sections, recipes)
+                self.console.print("[green]✓ Build metadata updated[/green]")
+                
         except Exception as e:
+            self.console.print(f"[red]✗ Error during scanning: {str(e)}[/red]")
             self.errors.append({
-                'section': 'directory_scan',
+                'section': 'scanning',
                 'error': str(e),
                 'type': type(e).__name__
             })
-        
-        try:
-            recipes = self.scan_recipe_files(sections)
-        except Exception as e:
-            self.errors.append({
-                'section': 'recipe_scan',
-                'error': str(e),
-                'type': type(e).__name__
-            })
-        
-        existing = load_metadata(self.metadata_path)
-        recipes = self.detect_changes(existing, recipes)
-        
-        metadata = self.update_metadata(sections, recipes)
+            
         metadata['scan_errors'] = self.errors
         return metadata
 
@@ -341,11 +340,15 @@ def main():
     
     try:
         scanner = RecipeScanner(config_path=args.config)
-        
-        print("* Scanning for recipes...")
         metadata = scanner.scan()
+        
+        # Add a separator before the summary
+        scanner.console.print("\n[bold cyan]╔══ Scan Summary ══╗[/bold cyan]")
         print_scan_summary(metadata)
         
+        if scanner.errors:
+            sys.exit(1)
+            
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
