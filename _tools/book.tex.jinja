@@ -3,7 +3,23 @@
 \usepackage{fontspec}
 \usepackage{tocloft}
 \usepackage{multicol}
-\usepackage[left={{ style.geometry.left }},right={{ style.geometry.right }},top={{ style.geometry.top }},bottom={{ style.geometry.bottom }}]{geometry}
+\usepackage{geometry}
+{% if style.twoside %}
+\geometry{
+    top={{ style.geometry.top }},
+    bottom={{ style.geometry.bottom }},
+    inner={{ style.geometry.left }},    % Binding side margin
+    outer={{ style.geometry.right }},   % Outer margin
+    twoside
+}
+{% else %}
+\geometry{
+    top={{ style.geometry.top }},
+    bottom={{ style.geometry.bottom }},
+    left={{ style.geometry.left }},
+    right={{ style.geometry.right }}
+}
+{% endif %}
 \setmainfont[Scale={{ style.font.scale }},AutoFakeBold={{ style.font.auto_fake_bold }},AutoFakeSlant={{ style.font.auto_fake_slant }}]{ {{- style.font.family -}} }
 
 \usepackage{fancyhdr}
@@ -53,7 +69,7 @@
 % Custom empty page handling for two-sided documents
 \newcommand{\emptypage}{
     \newpage
-    \thispagestyle{empty}
+    \thispagestyle{plain}
     \vspace*{\fill}
     \centerline{\hrulefill}
     \vspace*{\fill}
