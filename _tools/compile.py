@@ -26,7 +26,7 @@ from rich.console import Console
 from rich.table import Table
 
 from helpers import load_config, load_metadata
-from cookbook_indexer import CookbookIndexer
+# from cookbook_indexer import CookbookIndexer
 
 class BookCompiler:
     """Handles recipe book compilation process
@@ -320,39 +320,39 @@ class BookCompiler:
                 self.console.print(f"[cyan]LaTeX Pass {run + 1}/2[/cyan]")
                 
                 # After first pass, process for indexing if needed
-                if run == 0 and self.config['style'].get('include_index'):
-                    with self.console.status("[yellow]Processing index terms...", spinner="dots"):
-                        result = subprocess.run(
-                            ['latexpand', str(tex_path)],
-                            cwd=self.build_dir,
-                            capture_output=True,
-                            text=True
-                        )
-                        if result.returncode == 0:
-                            expanded_path = tex_path.with_suffix('.expanded.tex')
-                            expanded_path.write_text(result.stdout)
-                            self.console.print("[green]✓ Created expanded version[/green]")
+                # if run == 0 and self.config['style'].get('include_index'):
+                #     with self.console.status("[yellow]Processing index terms...", spinner="dots"):
+                #         result = subprocess.run(
+                #             ['latexpand', str(tex_path)],
+                #             cwd=self.build_dir,
+                #             capture_output=True,
+                #             text=True
+                #         )
+                #         if result.returncode == 0:
+                #             expanded_path = tex_path.with_suffix('.expanded.tex')
+                #             expanded_path.write_text(result.stdout)
+                #             self.console.print("[green]✓ Created expanded version[/green]")
                             
-                            # Process the expanded version for indexing
-                            indexer = CookbookIndexer(expanded_path)
-                            indexer.process()
+                #             # Process the expanded version for indexing
+                #             indexer = CookbookIndexer(expanded_path)
+                #             indexer.process()
                             
-                            # Rename the expanded index file to match the base name
-                            expanded_idx = tex_path.with_suffix('.expanded.idx')
-                            if expanded_idx.exists():
-                                idx_path = tex_path.with_suffix('.idx')
-                                expanded_idx.rename(idx_path)
+                #             # Rename the expanded index file to match the base name
+                #             expanded_idx = tex_path.with_suffix('.expanded.idx')
+                #             if expanded_idx.exists():
+                #                 idx_path = tex_path.with_suffix('.idx')
+                #                 expanded_idx.rename(idx_path)
                             
-                            # Use the expanded version for the second pass
-                            current_tex_path = expanded_path
-                            self.console.print("[green]✓ Index terms processed[/green]")
-                        else:
-                            self.console.print("[red]✗ Failed to process index terms[/red]")
-                            self.errors.append({
-                                'phase': 'expansion',
-                                'error': result.stderr
-                            })
-                            return False
+                #             # Use the expanded version for the second pass
+                #             current_tex_path = expanded_path
+                #             self.console.print("[green]✓ Index terms processed[/green]")
+                #         else:
+                #             self.console.print("[red]✗ Failed to process index terms[/red]")
+                #             self.errors.append({
+                #                 'phase': 'expansion',
+                #                 'error': result.stderr
+                #             })
+                #             return False
                 
                 # Compile with the current input file
                 with self.console.status("[bold yellow]Compiling...", spinner="dots"):
@@ -507,19 +507,19 @@ class BookCompiler:
             self.console.print(f"[green]✓ Content saved to {tex_path.name}[/green]")
 
             # Generate index if enabled
-            if self.config['style'].get('include_index'):
-                status.update("[yellow]Generating index...")
-                indexer = CookbookIndexer(tex_path)
-                try:
-                    indexer.process()
-                    self.console.print("[green]✓ Index generated[/green]")
-                except Exception as e:
-                    self.console.print("[red]✗ Index generation failed[/red]")
-                    self.errors.append({
-                        'phase': 'index',
-                        'error': str(e)
-                    })
-                    return None
+            # if self.config['style'].get('include_index'):
+            #     status.update("[yellow]Generating index...")
+            #     indexer = CookbookIndexer(tex_path)
+            #     try:
+            #         indexer.process()
+            #         self.console.print("[green]✓ Index generated[/green]")
+            #     except Exception as e:
+            #         self.console.print("[red]✗ Index generation failed[/red]")
+            #         self.errors.append({
+            #             'phase': 'index',
+            #             'error': str(e)
+            #         })
+            #         return None
         
         # Run LaTeX compiler
         self.console.print("\n[bold cyan]╔══ LaTeX Compilation ══╗[/bold cyan]")
