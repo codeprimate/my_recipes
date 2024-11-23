@@ -5,3 +5,4 @@
 *.swp
 _build/
 _tools/book.yml
+__pycache__
