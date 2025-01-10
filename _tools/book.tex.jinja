@@ -1,0 +1,127 @@
+\documentclass[{{ style.base_font_size }}, {{ "twoside" if style.twoside else "oneside" }}]{ {{- style.documentclass -}} }
+
+\usepackage{fontspec}
+\usepackage{tocloft}
+\usepackage{multicol}
+\usepackage{geometry}
+{% if style.twoside %}
+\geometry{
+    top={{ style.geometry.top }},
+    bottom={{ style.geometry.bottom }},
+    inner={{ style.geometry.left }},    % Binding side margin
+    outer={{ style.geometry.right }},   % Outer margin
+    twoside
+}
+{% else %}
+\geometry{
+    top={{ style.geometry.top }},
+    bottom={{ style.geometry.bottom }},
+    left={{ style.geometry.left }},
+    right={{ style.geometry.right }}
+}
+{% endif %}
+\setmainfont[Scale={{ style.font.scale }},AutoFakeBold={{ style.font.auto_fake_bold }},AutoFakeSlant={{ style.font.auto_fake_slant }}]{ {{- style.font.family -}} }
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{} % Clear all header/footer fields
+\fancyhead[L]{ {{- title -}} } % Book title always on left
+\fancyhead[R]{\leftmark} % Chapter name always on right
+\fancyfoot[C]{\thepage} % Center page number in footer
+\renewcommand{\headrulewidth}{0.4pt} % Add header rule
+\renewcommand{\footrulewidth}{0pt} % Remove footer rule
+
+{% for package in packages %}
+{% if package not in ['fontspec', 'tocloft', 'multicol', 'geometry'] %}
+\usepackage{ {{- package -}} }
+{% endif %}
+{% endfor %}
+
+{% if index %}
+\usepackage{makeidx}  % Load makeidx package first
+\makeindex  % Initialize indexing
+{% endif %}
+
+\title{ {{- title -}} }
+\author{ {{- authorship.author -}} }
+\date{ {{- authorship.date -}} }
+
+\begin{document}
+
+% Title page
+\maketitle
+\thispagestyle{plain}
+\vspace*{\fill}
+\centerline{\hrulefill}
+\vspace*{\fill}
+\begin{center}
+    Copyright © {{ authorship.copyright }} {{ authorship.author }}\\
+    All rights reserved.
+\end{center}
+
+% Table of contents
+\newpage 
+\tableofcontents
+\vspace*{\fill}
+\hrulefill
+\vspace*{\fill}
+\newpage
+
+{% if twoside %}
+% Custom empty page handling for two-sided documents
+\newcommand{\emptypage}{
+    \newpage
+    \thispagestyle{plain}
+    \vspace*{\fill}
+    \centerline{\hrulefill}
+    \vspace*{\fill}
+    \clearpage
+}
+
+% Automatically insert empty page with hrulefill when needed
+\let\origchapter\chapter
+\renewcommand{\chapter}{
+    \ifnum\value{page}>1
+        \ifodd\value{page}\else
+            \emptypage
+        \fi
+    \fi
+    \origchapter
+}
+{% endif %}
+
+{% for section_name, recipes in sections.items() %}
+\chapter{ {{- section_name|upper -}} }
+\thispagestyle{plain}
+\markboth{ {{- section_name|upper -}} }{ {{- section_name|upper -}} }
+
+\vspace*{\fill}
+\hrulefill
+\vspace*{\fill}
+\newpage
+
+\thispagestyle{fancy}
+
+{% for recipe in recipes %}
+\begin{center}
+\huge{ {{- recipe.title -}} } 
+\normalsize
+\end{center}
+
+\addcontentsline{toc}{section}{ {{- recipe.title -}} }
+\input{ {{- recipe.extracted_body -}} }
+
+\vspace*{\fill}
+\hrulefill
+\vspace*{\fill}
+\newpage
+{% endfor %}
+
+{% endfor %}
+
+{% if index %}
+% Index
+\printindex
+{% endif %}
+
+\end{document} 

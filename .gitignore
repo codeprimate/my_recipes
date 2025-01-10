@@ -1,0 +1,8 @@
+.DS_Store
+*.aux
+*.log
+*.gz
+*.swp
+_build/
+_tools/book.yml
+__pycache__
