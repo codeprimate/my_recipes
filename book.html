@@ -218,8 +218,8 @@
         }
 
         .toc > ul > li {
-            flex: 1 1 calc(33.333% - 2em);
-            min-width: 250px;
+            flex: 1 1 calc(50% - 2em);
+            min-width: 300px;
             margin: 0;
             padding: 0;
         }
@@ -243,6 +243,9 @@
             line-height: 1.1;
             padding-left: 1em;
             text-indent: -1em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .toc a {
@@ -373,7 +376,7 @@
         .recipe ol li,
         .recipe ul li {
             margin: 0.4em;
-            padding-left: 2em;
+            padding-left: 0.2em;
             line-height: 1.2;
         }
 
