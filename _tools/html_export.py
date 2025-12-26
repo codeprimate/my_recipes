@@ -31,6 +31,39 @@ from helpers import load_config, load_metadata
 class LaTeXToHTMLConverter:
     """Converts LaTeX recipe content to HTML"""
     
+    def _convert_text_formatting(self, text: str) -> str:
+        """Recursively convert text formatting commands
+        
+        Args:
+            text: Text that may contain formatting commands
+            
+        Returns:
+            str: Text with formatting converted to HTML
+        """
+        # Convert text formatting (handle nested braces by processing from inside out)
+        # We need to handle nested braces, so we'll do multiple passes
+        max_iterations = 10  # Prevent infinite loops
+        iteration = 0
+        
+        while iteration < max_iterations:
+            iteration += 1
+            original = text
+            
+            # Convert textbf (bold)
+            text = re.sub(r'\\textbf\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}', r'<strong>\1</strong>', text)
+            
+            # Convert textit (italic)
+            text = re.sub(r'\\textit\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}', r'<em>\1</em>', text)
+            
+            # Convert emph (emphasis/italic)
+            text = re.sub(r'\\emph\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}', r'<em>\1</em>', text)
+            
+            # If no changes were made, we're done
+            if text == original:
+                break
+        
+        return text
+    
     def convert(self, latex_content: str) -> str:
         """Convert LaTeX content to HTML
         
@@ -42,26 +75,36 @@ class LaTeXToHTMLConverter:
         """
         html = latex_content
         
-        # Convert sections
+        # Remove LaTeX-specific layout commands first
+        html = re.sub(r'\\setlength\{[^}]+\}', '', html)
+        html = re.sub(r'\\columnbreak', '', html)
+        html = re.sub(r'\\vspace\*?\{[^}]+\}', '', html)
+        html = re.sub(r'\\hspace\*?\{[^}]+\}', '', html)
+        html = re.sub(r'\\noindent\s*', '', html)
+        html = re.sub(r'\\newpage', '<div class="page-break"></div>', html)
+        
+        # Convert sections and subsections
         html = re.sub(r'\\section\*\{([^}]+)\}', r'<h3>\1</h3>', html)
         html = re.sub(r'\\section\{([^}]+)\}', r'<h3>\1</h3>', html)
+        html = re.sub(r'\\subsection\*\{([^}]+)\}', r'<h4>\1</h4>', html)
+        html = re.sub(r'\\subsection\{([^}]+)\}', r'<h4>\1</h4>', html)
         
-        # Convert text formatting
-        html = re.sub(r'\\textbf\{([^}]+)\}', r'<strong>\1</strong>', html)
-        html = re.sub(r'\\textit\{([^}]+)\}', r'<em>\1</em>', html)
-        html = re.sub(r'\\emph\{([^}]+)\}', r'<em>\1</em>', html)
-        
-        # Convert multicols environment to HTML structure
-        html = self._convert_multicols(html)
-        
-        # Convert enumerate - handle multiline items
+        # Convert enumerate environments first (before multicols, so nested lists work)
         html = re.sub(r'\\begin\{enumerate\}(.*?)\\end\{enumerate\}', 
                       lambda m: self._convert_enumerate(m.group(1)), 
                       html, flags=re.DOTALL)
         
-        # Convert itemize
-        html = re.sub(r'\\begin\{itemize\}', '<ul>', html)
-        html = re.sub(r'\\end\{itemize\}', '</ul>', html)
+        # Convert itemize environments (before multicols, so nested lists work)
+        html = re.sub(r'\\begin\{itemize\}(.*?)\\end\{itemize\}', 
+                      lambda m: self._convert_itemize(m.group(1)), 
+                      html, flags=re.DOTALL)
+        
+        # Convert multicols environment to HTML structure (after lists are converted)
+        html = self._convert_multicols(html)
+        
+        # Convert text formatting (after environments are converted)
+        # Use the helper method which handles nested braces
+        html = self._convert_text_formatting(html)
         
         # Convert dotfill to CSS-based dotted line
         html = re.sub(r'\\dotfill', '<span class="dotfill"></span>', html)
@@ -70,23 +113,50 @@ class LaTeXToHTMLConverter:
         html = re.sub(r'\\\\', '<br>', html)
         html = re.sub(r'\\newline', '<br>', html)
         
-        # Convert noindent
-        html = re.sub(r'\\noindent\s*', '', html)
-        
         # Convert non-breaking spaces
         html = re.sub(r'~', '&nbsp;', html)
+        
+        # Convert escaped ampersand (LaTeX \& to HTML &)
+        html = re.sub(r'\\&', '&', html)
         
         # Convert quotes
         html = re.sub(r'``', '"', html)
         html = re.sub(r"''", '"', html)
         html = re.sub(r'`', "'", html)
         
-        # Remove LaTeX-specific commands that don't translate
-        html = re.sub(r'\\setlength\{[^}]+\}', '', html)
-        html = re.sub(r'\\columnbreak', '', html)
-        html = re.sub(r'\\vspace\*?\{[^}]+\}', '', html)
-        html = re.sub(r'\\hspace\*?\{[^}]+\}', '', html)
+        # Convert em dash
+        html = re.sub(r'---', '&mdash;', html)
+        
+        # Convert hrulefill
         html = re.sub(r'\\hrulefill', '<hr class="section-divider">', html)
+        
+        # Remove font size commands and braces
+        html = re.sub(r'\\small\s*', '', html)
+        html = re.sub(r'\\large\s*', '', html)
+        html = re.sub(r'\\Large\s*', '', html)
+        html = re.sub(r'\\huge\s*', '', html)
+        html = re.sub(r'\\normalsize\s*', '', html)
+        html = re.sub(r'\{([^}]*)\\small([^}]*)\}', r'\1\2', html)  # Remove { \small ... }
+        
+        # Clean up any remaining LaTeX commands that might have slipped through
+        html = re.sub(r'\\begin\{enumerate\}', '', html)
+        html = re.sub(r'\\end\{enumerate\}', '', html)
+        html = re.sub(r'\\begin\{itemize\}', '', html)
+        html = re.sub(r'\\end\{itemize\}', '', html)
+        html = re.sub(r'\\item\s+', '', html)  # Remove any remaining \item commands
+        html = re.sub(r'\{[0-9]+pt\}', '', html)  # Remove {20pt} etc
+        html = re.sub(r'% Begin compact.*', '', html)  # Remove comments
+        html = re.sub(r'\{[^}]*\}', '', html)  # Remove any remaining single braces with content
+        
+        # Clean up malformed HTML tags
+        html = re.sub(r'</ul></div>', '</ul>', html)  # Fix </ul></div> issues
+        html = re.sub(r'<ul></div>', '<ul>', html)  # Fix <ul></div> issues
+        html = re.sub(r'<div class="ingredient-item"><li>', '<li>', html)  # Fix nested structure
+        html = re.sub(r'</li></div>', '</li>', html)  # Fix closing tags
+        html = re.sub(r'<div class="ingredient-item"><h4>', '<h4>', html)
+        html = re.sub(r'</h4></div>', '</h4>', html)
+        html = re.sub(r'<div class="ingredient-item"><ul>', '<ul>', html)
+        html = re.sub(r'<div class="ingredient-item"></ul>', '</ul>', html)
         
         # Clean up extra whitespace
         html = re.sub(r'\n\s*\n\s*\n+', '\n\n', html)
@@ -103,18 +173,101 @@ class LaTeXToHTMLConverter:
         Returns:
             str: HTML ordered list
         """
-        items = re.split(r'\\item\s+', content)
-        if len(items) <= 1:
+        # Split content by \item, but be careful about the pattern
+        # We want to match \item at the start of a line (with optional leading whitespace)
+        # or \item with preceding whitespace
+        items = []
+        
+        # Split by \item - this is more reliable than regex matching
+        parts = re.split(r'\\item\s+', content)
+        
+        # First part is usually empty (content before first \item), skip it
+        for part in parts[1:]:
+            part = part.strip()
+            if not part:
+                continue
+            
+            # Remove trailing \\ if present
+            part = re.sub(r'\\\\\s*$', '', part)
+            
+            # Convert nested formatting within the item
+            part = self._convert_text_formatting(part)
+            
+            # Convert non-breaking spaces
+            part = re.sub(r'~', '&nbsp;', part)
+            
+            # Preserve paragraph breaks within items (blank lines become <br><br>)
+            part = re.sub(r'\n\s*\n+', '<br><br>', part)
+            # Convert single newlines to spaces
+            part = re.sub(r'\n', ' ', part)
+            
+            # Clean up extra spaces but preserve intentional breaks
+            part = re.sub(r' +', ' ', part)
+            part = re.sub(r' <br><br> ', '<br><br>', part)
+            part = part.strip()
+            
+            if part:
+                items.append(part)
+        
+        if not items:
             return '<ol></ol>'
         
         html = '<ol>\n'
-        for item in items[1:]:  # Skip first empty part before first \item
-            item = item.strip()
-            if item:
-                # Remove trailing \\ if present
-                item = re.sub(r'\\\\\s*$', '', item)
-                html += f'    <li>{item}</li>\n'
+        for item in items:
+            html += f'    <li>{item}</li>\n'
         html += '</ol>'
+        return html
+    
+    def _convert_itemize(self, content: str) -> str:
+        """Convert itemize environment content to HTML unordered list
+        
+        Args:
+            content: Content between \begin{itemize} and \end{itemize}
+            
+        Returns:
+            str: HTML unordered list
+        """
+        # Split content by \item
+        items = []
+        
+        # Split by \item - this is more reliable than regex matching
+        parts = re.split(r'\\item\s+', content)
+        
+        # First part is usually empty (content before first \item), skip it
+        for part in parts[1:]:
+            part = part.strip()
+            if not part:
+                continue
+            
+            # Remove trailing \\ if present
+            part = re.sub(r'\\\\\s*$', '', part)
+            
+            # Convert nested formatting within the item
+            part = self._convert_text_formatting(part)
+            
+            # Convert non-breaking spaces
+            part = re.sub(r'~', '&nbsp;', part)
+            
+            # Preserve paragraph breaks within items (blank lines become <br><br>)
+            part = re.sub(r'\n\s*\n+', '<br><br>', part)
+            # Convert single newlines to spaces
+            part = re.sub(r'\n', ' ', part)
+            
+            # Clean up extra spaces but preserve intentional breaks
+            part = re.sub(r' +', ' ', part)
+            part = re.sub(r' <br><br> ', '<br><br>', part)
+            part = part.strip()
+            
+            if part:
+                items.append(part)
+        
+        if not items:
+            return '<ul></ul>'
+        
+        html = '<ul>\n'
+        for item in items:
+            html += f'    <li>{item}</li>\n'
+        html += '</ul>'
         return html
     
     def _convert_multicols(self, html: str) -> str:
@@ -125,14 +278,40 @@ class LaTeXToHTMLConverter:
             
         Returns:
             str: HTML with multicols converted to grid
+            
+        Note: This handles both ingredient lists (with dotfill) and appendix
+        sections (with subsections and itemize environments). Lists are already
+        converted to HTML by this point.
         """
-        # Find multicols blocks
+        # Find multicols blocks - use non-greedy matching but be careful with nested environments
         pattern = r'\\begin\{multicols\}\{(\d+)\}(.*?)\\end\{multicols\}'
         
         def replace_multicols(match):
             cols = int(match.group(1))
             content = match.group(2)
             
+            # Check if this is an ingredient list (has dotfill) or appendix (has HTML h4 tags or ul/ol)
+            has_dotfill = '\\dotfill' in content
+            has_html_structure = '<h4>' in content or '<ul>' in content or '<ol>' in content or '<li>' in content
+            
+            if has_html_structure:
+                # This is an appendix section - already has HTML structure, just wrap in grid
+                # Clean up any remaining LaTeX commands that might be mixed in
+                content = re.sub(r'\\setlength\{[^}]+\}', '', content)
+                content = re.sub(r'\{[0-9]+pt\}', '', content)  # Remove {20pt} etc
+                content = re.sub(r'% Begin compact.*', '', content, flags=re.MULTILINE)  # Remove comments
+                content = re.sub(r'\\item\s+', '', content)  # Remove any remaining \item
+                content = re.sub(r'\\begin\{itemize\}', '', content)
+                content = re.sub(r'\\end\{itemize\}', '', content)
+                content = re.sub(r'\\begin\{enumerate\}', '', content)
+                content = re.sub(r'\\end\{enumerate\}', '', content)
+                # Remove standalone braces that are just LaTeX formatting
+                content = re.sub(r'^\{[^}]*\}$', '', content, flags=re.MULTILINE)
+                # Clean up any stray } at start of lines
+                content = re.sub(r'^\}', '', content, flags=re.MULTILINE)
+                return f'<div class="ingredients-columns">{content}</div>'
+            
+            # This is an ingredient list - process line by line
             # Split content by \columnbreak
             parts = content.split('\\columnbreak')
             
@@ -216,6 +395,24 @@ class HTMLExporter:
             trim_blocks=True,
             lstrip_blocks=True
         )
+        
+        # Add custom filter for URL-safe ID generation
+        def url_safe_id(text: str) -> str:
+            """Convert text to URL-safe ID by removing/replacing special characters"""
+            import re
+            # Convert to lowercase
+            text = text.lower()
+            # Replace spaces and underscores with hyphens
+            text = re.sub(r'[\s_]+', '-', text)
+            # Remove all non-alphanumeric characters except hyphens
+            text = re.sub(r'[^a-z0-9\-]', '', text)
+            # Remove multiple consecutive hyphens
+            text = re.sub(r'-+', '-', text)
+            # Remove leading/trailing hyphens
+            text = text.strip('-')
+            return text
+        
+        self.jinja_env.filters['url_safe_id'] = url_safe_id
         
         self.console = Console()
     

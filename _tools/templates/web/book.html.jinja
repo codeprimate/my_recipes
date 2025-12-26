@@ -14,13 +14,130 @@
 
         body {
             font-family: {{ style.font.family|default('Georgia, serif') }}, serif;
-            font-size: {{ style.base_font_size|default('11pt') }};
+            font-size: {{ style.base_font_size|default('12pt') }};
             line-height: 1.6;
             color: #333;
             background-color: #fff;
-            max-width: 8.5in;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 1in;
+            padding: 2em 3em;
+            position: relative;
+        }
+
+        /* Layout container for sidebar and content */
+        .layout-container {
+            display: flex;
+            gap: 3em;
+            align-items: flex-start;
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 900px;
+        }
+
+        /* Sticky Navigation Sidebar */
+        .sticky-nav {
+            position: sticky;
+            top: 2em;
+            width: 280px;
+            max-height: calc(100vh - 4em);
+            overflow-y: auto;
+            padding: 1.5em;
+            background-color: #f8f8f8;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.9em;
+            flex-shrink: 0;
+        }
+
+        .sticky-nav::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sticky-nav::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .sticky-nav::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+        .sticky-nav::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .sticky-nav h3 {
+            font-size: 1.1em;
+            margin: 0 0 1em 0;
+            padding-bottom: 0.75em;
+            border-bottom: 2px solid #333;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .sticky-nav h3 a {
+            color: #333;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .sticky-nav h3 a:hover {
+            color: #0066cc;
+        }
+
+        .sticky-nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .sticky-nav > ul > li {
+            margin: 0.75em 0;
+        }
+
+        .sticky-nav .section-link {
+            font-weight: bold;
+            color: #333;
+            text-decoration: none;
+            display: block;
+            padding: 0.4em 0;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 0.5px;
+        }
+
+        .sticky-nav .section-link:hover,
+        .sticky-nav .section-link.active {
+            color: #0066cc;
+        }
+
+        .sticky-nav .recipe-links {
+            margin: 0.5em 0 1em 0;
+            padding-left: 1em;
+            border-left: 2px solid #ddd;
+        }
+
+        .sticky-nav .recipe-links li {
+            margin: 0.35em 0;
+        }
+
+        .sticky-nav .recipe-link {
+            color: #666;
+            text-decoration: none;
+            display: block;
+            padding: 0.3em 0;
+            font-size: 0.9em;
+            transition: color 0.2s;
+            line-height: 1.4;
+        }
+
+        .sticky-nav .recipe-link:hover,
+        .sticky-nav .recipe-link.active {
+            color: #0066cc;
+            font-weight: 500;
         }
 
         /* Typography */
@@ -93,18 +210,48 @@
             page-break-before: auto;
         }
 
-        .toc ul {
+        .toc > ul {
             list-style: none;
             margin: 1em 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2em;
         }
 
-        .toc li {
-            margin: 0.5em 0;
+        .toc > ul > li {
+            flex: 1 1 calc(33.333% - 2em);
+            min-width: 250px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .toc > ul > li > strong {
+            display: block;
+            margin-bottom: 0.5em;
+            padding-bottom: 0.5em;
+            font-size: 1.1em;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .toc > ul > li > ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .toc > ul > li > ul > li {
+            margin: 0.15em 0;
+            line-height: 1.3;
         }
 
         .toc a {
             text-decoration: none;
             color: #333;
+            transition: color 0.2s;
+        }
+
+        .toc a:hover {
+            color: #0066cc;
         }
 
         /* Section headers */
@@ -121,7 +268,7 @@
 
         /* Recipe sections */
         .recipe {
-            margin: 2em 0;
+            margin: 2.5em 0;
         }
 
         .recipe-title {
@@ -149,23 +296,48 @@
 
         .ingredient-item {
             display: flex;
-            justify-content: space-between;
-            margin: 0.25em 0;
-        }
-
-        .ingredient-item .dotfill {
-            flex: 1;
-            border-bottom: 1px dotted #333;
-            margin: 0 0.5em;
-            height: 1em;
+            align-items: center;
+            margin: 0 0 0.2em 0;
+            line-height: 1.3;
+            gap: 0.5em;
         }
 
         .ingredient-name {
-            flex: 1;
+            flex: 0 1 auto;
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+        .ingredient-item .dotfill {
+            flex: 1 1 auto;
+            min-width: 20px;
+            height: 1em;
+            margin: 0 0.5em;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Modern dot leader using SVG pattern for crisp, consistent dots */
+        .ingredient-item .dotfill::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            margin: auto 0;
+            height: 1px;
+            background-image: url("data:image/svg+xml,%3Csvg width='6' height='2' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='1' cy='1' r='0.8' fill='%23666'/%3E%3C/svg%3E");
+            background-repeat: repeat-x;
+            background-size: 6px 2px;
         }
 
         .ingredient-amount {
-            font-weight: normal;
+            flex: 0 0 auto;
+            white-space: nowrap;
+            font-weight: 500;
+            color: #444;
         }
 
         /* Directions section */
@@ -184,7 +356,23 @@
         }
 
         .directions li {
-            margin: 0.5em 0;
+            margin: 0;
+            padding-left: 1em;
+            line-height: 1.3;
+        }
+
+        /* Target all list items within recipes for directions */
+        .recipe ol,
+        .recipe ul {
+            margin: 1em 0;
+            padding-left: 2em;
+        }
+
+        .recipe ol li,
+        .recipe ul li {
+            margin: 0.4em;
+            padding-left: 2em;
+            line-height: 1.2;
         }
 
         /* Text formatting */
@@ -214,8 +402,21 @@
 
         /* Print styles */
         @media print {
+            .sticky-nav {
+                display: none;
+            }
+
+            .layout-container {
+                display: block;
+            }
+
             body {
+                max-width: 8.5in;
                 padding: 0.5in;
+            }
+            
+            .main-content {
+                max-width: 100%;
             }
 
             h2 {
@@ -233,6 +434,41 @@
         }
 
         /* Responsive design */
+        @media screen and (max-width: 1400px) {
+            body {
+                max-width: 100%;
+                padding: 2em;
+            }
+        }
+
+        @media screen and (max-width: 1200px) {
+            body {
+                padding: 1.5em;
+            }
+            
+            .layout-container {
+                gap: 2em;
+            }
+            
+            .sticky-nav {
+                width: 240px;
+            }
+        }
+
+        @media screen and (max-width: 1024px) {
+            .sticky-nav {
+                display: none;
+            }
+            
+            .main-content {
+                max-width: 100%;
+            }
+
+            .toc > ul > li {
+                flex: 1 1 calc(50% - 2em);
+            }
+        }
+
         @media screen and (max-width: 768px) {
             body {
                 padding: 1em;
@@ -241,6 +477,10 @@
 
             .ingredients-columns {
                 grid-template-columns: 1fr;
+            }
+
+            .toc > ul > li {
+                flex: 1 1 100%;
             }
 
             h1 {
@@ -254,52 +494,147 @@
     </style>
 </head>
 <body>
-    <!-- Title Page -->
-    <div class="title-page">
-        <h1>{{ title }}</h1>
-        <div class="author">{{ authorship.author }}</div>
-        <div class="date">{{ authorship.date }}</div>
-        <div class="copyright">
-            Copyright © 2024-{{ authorship.copyright }} {{ authorship.author }}<br>
-            All rights reserved.
+    <div class="layout-container">
+        <!-- Sticky Navigation Sidebar -->
+        <nav class="sticky-nav">
+            <h3><a href="#table-of-contents" class="section-link">Table of Contents</a></h3>
+            <ul>
+                {% for section_name, recipes in sections.items() %}
+                <li>
+                    <a href="#section-{{ section_name|url_safe_id }}" class="section-link" data-section="section-{{ section_name|url_safe_id }}">{{ section_name|upper }}</a>
+                    <ul class="recipe-links">
+                        {% for recipe in recipes %}
+                        <li>
+                            <a href="#recipe-{{ recipe.title|url_safe_id }}" class="recipe-link" data-recipe="recipe-{{ recipe.title|url_safe_id }}">{{ recipe.title }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                {% endfor %}
+            </ul>
+        </nav>
+
+        <div class="main-content">
+            <!-- Title Page -->
+            <div class="title-page">
+                <h1>{{ title }}</h1>
+                <div class="author">{{ authorship.author }}</div>
+                <div class="date">{{ authorship.date }}</div>
+                <div class="copyright">
+                    Copyright © 2024-{{ authorship.copyright }} {{ authorship.author }}<br>
+                    All rights reserved.
+                </div>
+            </div>
+
+            {% if include_toc %}
+            <!-- Table of Contents -->
+            <div class="toc" id="table-of-contents">
+                <h2>Table of Contents</h2>
+                <ul>
+                    {% for section_name, recipes in sections.items() %}
+                    <li>
+                        <strong><a href="#section-{{ section_name|url_safe_id }}">{{ section_name|upper }}</a></strong>
+                        <ul>
+                            {% for recipe in recipes %}
+                            <li><a href="#recipe-{{ recipe.title|url_safe_id }}">{{ recipe.title }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <hr class="section-divider">
+            </div>
+            {% endif %}
+
+            <!-- Recipe Sections -->
+            {% for section_name, recipes in sections.items() %}
+            <div class="section-header">
+                <h2 id="section-{{ section_name|url_safe_id }}">{{ section_name|upper }}</h2>
+                <hr class="section-divider">
+            </div>
+
+            {% for recipe in recipes %}
+            <div class="recipe" id="recipe-{{ recipe.title|url_safe_id }}">
+                <div class="recipe-title">{{ recipe.title }}</div>
+                {{ recipe.html_content }}
+                <hr class="section-divider">
+            </div>
+            {% endfor %}
+
+            {% endfor %}
         </div>
     </div>
 
-    {% if include_toc %}
-    <!-- Table of Contents -->
-    <div class="toc">
-        <h2>Table of Contents</h2>
-        <ul>
-            {% for section_name, recipes in sections.items() %}
-            <li>
-                <strong>{{ section_name|upper }}</strong>
-                <ul>
-                    {% for recipe in recipes %}
-                    <li><a href="#recipe-{{ recipe.title|lower|replace(' ', '-') }}">{{ recipe.title }}</a></li>
-                    {% endfor %}
-                </ul>
-            </li>
-            {% endfor %}
-        </ul>
-        <hr class="section-divider">
-    </div>
-    {% endif %}
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href === '#') return;
+                
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    const offset = 80; // Offset for sticky header
+                    const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                    // Update URL without jumping
+                    history.pushState(null, null, href);
+                }
+            });
+        });
 
-    <!-- Recipe Sections -->
-    {% for section_name, recipes in sections.items() %}
-    <div class="section-header">
-        <h2 id="section-{{ section_name|lower|replace(' ', '-') }}">{{ section_name|upper }}</h2>
-        <hr class="section-divider">
-    </div>
+        // Active state tracking for navigation
+        function updateActiveNav() {
+            const sections = document.querySelectorAll('.section-header, .recipe');
+            const navLinks = document.querySelectorAll('.sticky-nav a');
+            
+            // Remove all active classes
+            navLinks.forEach(link => link.classList.remove('active'));
+            
+            // Find the current section/recipe in view
+            let currentActive = null;
+            const scrollPosition = window.scrollY + 150; // Offset for better UX
+            
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                const sectionTop = window.pageYOffset + rect.top;
+                
+                if (sectionTop <= scrollPosition) {
+                    currentActive = section.id;
+                }
+            });
+            
+            // Set active class on corresponding nav link
+            if (currentActive) {
+                const activeLink = document.querySelector(`.sticky-nav a[href="#${currentActive}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                    
+                    // Also highlight parent section link if it's a recipe
+                    if (activeLink.classList.contains('recipe-link')) {
+                        const parentLi = activeLink.closest('ul.recipe-links').closest('li');
+                        const sectionLink = parentLi.querySelector('.section-link');
+                        if (sectionLink) {
+                            sectionLink.classList.add('active');
+                        }
+                    }
+                }
+            }
+        }
 
-    {% for recipe in recipes %}
-    <div class="recipe" id="recipe-{{ recipe.title|lower|replace(' ', '-') }}">
-        <div class="recipe-title">{{ recipe.title }}</div>
-        {{ recipe.html_content }}
-        <hr class="section-divider">
-    </div>
-    {% endfor %}
+        // Update active state on scroll
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(updateActiveNav, 50);
+        });
 
-    {% endfor %}
+        // Initial update
+        updateActiveNav();
+    </script>
 </body>
 </html>
