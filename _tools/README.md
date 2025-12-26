@@ -10,11 +10,12 @@ A build system that converts a collection of LaTeX recipe files into a beautiful
 - Incremental builds - only processes changed files
 - Rich console output with detailed build status
 - Generates table of contents and optional index
+- **HTML export** - Convert LaTeX cookbook to self-contained HTML with embedded CSS
 
 ## Prerequisites
 
 - Python 3.8+
-- XeLaTeX compiler
+- XeLaTeX compiler (for PDF generation)
 - Python packages can be installed via:
   ```bash
   pip install -r requirements.txt
@@ -49,6 +50,9 @@ A build system that converts a collection of LaTeX recipe files into a beautiful
    authorship:
      author: "Your Name"
      version: "2024 Edition"
+   build:
+     html_export: true  # Enable HTML export (requires Pandoc)
+     html_output_dir: "html"
    ```
 
 ## Usage
@@ -66,6 +70,8 @@ python _tools/build.py
 ```
 
 The compiled PDF will be created in the `_build` directory.
+
+If HTML export is enabled in your configuration, a self-contained HTML file with embedded CSS will be generated in `_build/html/book.html`.
 
 ### Recipe File Structure
 
@@ -106,6 +112,7 @@ python _tools/scan.py      # Scan for recipe files
 python _tools/extract.py   # Extract content and requirements
 python _tools/preprocess.py # Normalize content
 python _tools/compile.py   # Generate final PDF
+python _tools/html_export.py  # Export HTML (requires Pandoc)
 ```
 
 Use a custom config file:
@@ -118,9 +125,20 @@ python _tools/build.py --config path/to/config.yml
 
 The system creates a `_build` directory containing:
 
-- Final PDF cookbook
-- Extracted and preprocessed recipe content
-- Build metadata and logs
+- Final PDF cookbook (`book.pdf`)
+- HTML export (`html/book.html`) - if HTML export is enabled
+- Extracted and preprocessed recipe content (`bodies/`)
+- Build metadata and logs (`metadata.yml`)
+
+### HTML Export
+
+The HTML export feature generates a single self-contained HTML file with embedded CSS. The styling can be customized by editing the template at `_tools/templates/web/book.html.jinja`.
+
+Features:
+- Responsive design (mobile/tablet friendly)
+- Print-friendly CSS
+- Embedded CSS (no external dependencies)
+- Table of contents navigation
 
 ## Contributing
 

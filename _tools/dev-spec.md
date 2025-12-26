@@ -10,7 +10,8 @@ The build system processes individual LaTeX recipe files into a cohesive book by
 1. Detecting sections from directory structure
 2. Extracting content and package requirements
 3. Preprocessing content for consistency
-4. Assembling and compiling a final book
+4. Assembling and compiling a final book (PDF)
+5. Optionally exporting to HTML format with embedded CSS
 
 ## Directory Structure
 ```
@@ -22,8 +23,12 @@ The build system processes individual LaTeX recipe files into a cohesive book by
 │   ├── scan.py         # Directory/file scanner
 │   ├── extract.py      # Content/package extractor
 │   ├── preprocess.py   # Content normalizer
-│   ├── compile.py      # Book assembler
-│   ├── book.tex.jinja  # Master template (jinja2)
+│   ├── compile.py      # Book assembler (PDF)
+│   ├── html_export.py   # HTML exporter
+│   ├── book.tex.jinja  # Master LaTeX template (jinja2)
+│   ├── templates/
+│   │   └── web/
+│   │       └── book.html.jinja  # HTML template with embedded CSS
 │   └── book.yml        # Main configuration
 ├── _build/             # Build artifacts (git-ignored)
 │   ├── metadata.yml    # Build state tracking
@@ -81,6 +86,8 @@ style:
     auto_fake_slant: 0.3
 build:
   output_dir: "_build"  # Build directory for all artifacts
+  html_export: true  # Enable HTML export (requires Pandoc)
+  html_output_dir: "html"  # Subdirectory for HTML output
 latex_compiler: "xelatex"  # LaTeX compiler to use
 ```
 
@@ -217,11 +224,26 @@ extraction_errors:  # Tracks any errors during extraction
   - Compilation errors
   - Output file location
 
+### 5. html_export.py (Optional)
+- Validates build state and preprocessed recipe content
+- Converts LaTeX recipe bodies to HTML using custom converter
+- Prepares template variables (same structure as compile.py)
+- Renders HTML template (`_tools/templates/web/book.html.jinja`) with:
+  - Book metadata (title, author, etc)
+  - Style configuration
+  - Embedded CSS styling
+  - HTML-converted recipe content
+- Generates self-contained HTML file with embedded CSS
+- Provides export summary with error reporting
+- HTML export errors do not fail the build (non-blocking)
+- No external dependencies required (no Pandoc needed)
+
 ### build.py
 - Main entry point
 - Orchestrates pipeline execution
 - Handles errors and logging
 - Ensures clean state between runs
+- Optionally runs HTML export stage if configured
 
 ## Development Guidelines
 
@@ -246,4 +268,5 @@ python _tools/scan.py [--config path/to/config]
 python _tools/extract.py [--config path/to/config]
 python _tools/preprocess.py [--config path/to/config]
 python _tools/compile.py [--config path/to/config]
+python _tools/html_export.py [--config path/to/config]  # Requires Pandoc
 ```

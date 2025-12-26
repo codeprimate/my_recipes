@@ -21,6 +21,7 @@ from scan import RecipeScanner
 from extract import RecipeExtractor
 from preprocess import RecipePreprocessor
 from compile import BookCompiler
+from html_export import HTMLExporter
 from helpers import load_config
 
 class RecipeBookBuilder:
@@ -138,9 +139,22 @@ class RecipeBookBuilder:
                 self.errors.extend([{'stage': 'compile', **e} for e in self.compiler.errors])
                 return None
 
-            # Stage 5: Copy PDF to project root
+            # Stage 5: HTML Export (optional)
+            if self.config['build'].get('html_export', False):
+                stage_start = datetime.now()
+                self.console.print("\n[bold blue]Stage 5: Exporting HTML...[/bold blue]")
+                self.html_exporter = HTMLExporter(self.config_path)
+                html_path = self.html_exporter.export_html()
+                self.stage_times['html_export'] = datetime.now() - stage_start
+                self.console.print(f"[dim]HTML export completed in {self.stage_times['html_export'].total_seconds():.1f}s[/dim]")
+                # HTML export errors don't fail the build, just log them
+                if self.html_exporter.errors:
+                    self.errors.extend([{'stage': 'html_export', **e} for e in self.html_exporter.errors])
+                    self.console.print("[yellow]HTML export had errors (build continuing)[/yellow]")
+
+            # Stage 6: Copy PDF to project root
             # Copy PDF to project root if compilation succeeded
-            self.console.print("\n[bold blue]Stage 5: Copying PDF to project root...[/bold blue]")
+            self.console.print("\n[bold blue]Stage 6: Copying PDF to project root...[/bold blue]")
             if pdf_path and pdf_path.exists():
                 import shutil
                 root_pdf = Path(pdf_path.name)  # Create path in project root

@@ -23,4 +23,8 @@ style:
     auto_fake_slant: 0.3
 build:
   source: ""
-  output_dir: "_build" 
+  output_dir: "_build"
+  html_export: true
+  html_output_dir: "html" 
+  html_export: true
+  html_output_dir: "html" 
