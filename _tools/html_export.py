@@ -99,6 +99,16 @@ class LaTeXToHTMLConverter:
                       lambda m: self._convert_itemize(m.group(1)), 
                       html, flags=re.DOTALL)
         
+        # Convert em environments (before quote, so nested environments work)
+        html = re.sub(r'\\begin\{em\}(.*?)\\end\{em\}', 
+                      r'<em>\1</em>', 
+                      html, flags=re.DOTALL)
+        
+        # Convert quote environments (after em, so nested environments work)
+        html = re.sub(r'\\begin\{quote\}(.*?)\\end\{quote\}', 
+                      r'<blockquote>\1</blockquote>', 
+                      html, flags=re.DOTALL)
+        
         # Convert multicols environment to HTML structure (after lists are converted)
         html = self._convert_multicols(html)
         
@@ -143,6 +153,10 @@ class LaTeXToHTMLConverter:
         html = re.sub(r'\\end\{enumerate\}', '', html)
         html = re.sub(r'\\begin\{itemize\}', '', html)
         html = re.sub(r'\\end\{itemize\}', '', html)
+        html = re.sub(r'\\begin\{quote\}', '', html)
+        html = re.sub(r'\\end\{quote\}', '', html)
+        html = re.sub(r'\\begin\{em\}', '', html)
+        html = re.sub(r'\\end\{em\}', '', html)
         html = re.sub(r'\\item\s+', '', html)  # Remove any remaining \item commands
         html = re.sub(r'\{[0-9]+pt\}', '', html)  # Remove {20pt} etc
         html = re.sub(r'% Begin compact.*', '', html)  # Remove comments

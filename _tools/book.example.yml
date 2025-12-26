@@ -8,6 +8,7 @@ style:
   documentclass: "book"
   size: "letterpaper"
   base_font_size: "11pt"
+  html_font_size: "14pt"
   twoside: true
   include_toc: true
   include_index: false
@@ -24,7 +25,5 @@ style:
 build:
   source: ""
   output_dir: "_build"
-  html_export: true
-  html_output_dir: "html" 
   html_export: true
   html_output_dir: "html" 
