@@ -93,6 +93,7 @@ class RecipeBookBuilder:
             
         self.start_time = datetime.now()
         pdf_path = None
+        html_path = None
 
         try:
             # Stage 1: Scan
@@ -152,16 +153,24 @@ class RecipeBookBuilder:
                     self.errors.extend([{'stage': 'html_export', **e} for e in self.html_exporter.errors])
                     self.console.print("[yellow]HTML export had errors (build continuing)[/yellow]")
 
-            # Stage 6: Copy PDF to project root
+            # Stage 6: Copy outputs to project root
+            import shutil
+            self.console.print("\n[bold blue]Stage 6: Copying outputs to project root...[/bold blue]")
             # Copy PDF to project root if compilation succeeded
-            self.console.print("\n[bold blue]Stage 6: Copying PDF to project root...[/bold blue]")
             if pdf_path and pdf_path.exists():
-                import shutil
                 root_pdf = Path(pdf_path.name)  # Create path in project root
                 shutil.copy2(pdf_path, root_pdf)
                 self.console.print(f"[dim]Copied PDF to project root: {root_pdf}[/dim]")
             else:
                 self.console.print("[red]Failed to copy PDF to project root[/red]")
+            
+            # Copy HTML to project root if export succeeded
+            if html_path and html_path.exists():
+                root_html = Path(html_path.name)  # Create path in project root
+                shutil.copy2(html_path, root_html)
+                self.console.print(f"[dim]Copied HTML to project root: {root_html}[/dim]")
+            elif self.config['build'].get('html_export', False):
+                self.console.print("[yellow]HTML export was enabled but file not found, skipping copy[/yellow]")
 
         except Exception as e:
             self.errors.append({
@@ -173,15 +182,16 @@ class RecipeBookBuilder:
             
         finally:
             self.end_time = datetime.now()
-            self.print_build_summary(pdf_path)
+            self.print_build_summary(pdf_path, html_path)
 
         return pdf_path
 
-    def print_build_summary(self, pdf_path: Optional[Path]) -> None:
+    def print_build_summary(self, pdf_path: Optional[Path], html_path: Optional[Path] = None) -> None:
         """Print comprehensive build summary
         
         Args:
             pdf_path: Path to compiled PDF if build succeeded
+            html_path: Path to exported HTML if build succeeded and HTML export was enabled
         """
         duration = self.end_time - self.start_time
         
@@ -190,9 +200,13 @@ class RecipeBookBuilder:
         
         if pdf_path:
             root_pdf = Path(pdf_path.name)
-            self.console.print(f"Output: [green]{root_pdf}[/green]")
+            self.console.print(f"PDF Output: [green]{root_pdf}[/green]")
         else:
             self.console.print("[red]Build failed[/red]")
+        
+        if html_path:
+            root_html = Path(html_path.name)
+            self.console.print(f"HTML Output: [green]{root_html}[/green]")
 
         if self.errors:
             error_table = Table(title="\nBuild Errors")
