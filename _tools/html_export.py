@@ -112,9 +112,19 @@ class LaTeXToHTMLConverter:
         # Convert multicols environment to HTML structure (after lists are converted)
         html = self._convert_multicols(html)
         
+        # Convert non-multicol ingredient lists (after multicols, before dotfill conversion)
+        html = self._convert_nonmulticol_ingredients(html)
+        
         # Convert text formatting (after environments are converted)
         # Use the helper method which handles nested braces
         html = self._convert_text_formatting(html)
+        
+        # Convert LaTeX fraction commands to HTML entities (handle both with and without braces)
+        html = re.sub(r'\\textonehalf(\{\})?', '½', html)
+        html = re.sub(r'\\textonequarter(\{\})?', '¼', html)
+        html = re.sub(r'\\textthreequarter(\{\})?', '¾', html)
+        html = re.sub(r'\\textonethird(\{\})?', '⅓', html)
+        html = re.sub(r'\\texttwothirds(\{\})?', '⅔', html)
         
         # Convert dotfill to CSS-based dotted line
         html = re.sub(r'\\dotfill', '<span class="dotfill"></span>', html)
@@ -362,6 +372,137 @@ class LaTeXToHTMLConverter:
             return grid_html
         
         return re.sub(pattern, replace_multicols, html, flags=re.DOTALL)
+    
+    def _convert_nonmulticol_ingredients(self, html: str) -> str:
+        """Convert ingredient lists that aren't in multicols environment
+        
+        Detects ingredient lists that use \dotfill but aren't wrapped in multicols.
+        These are typically simple single-column ingredient lists.
+        
+        Args:
+            html: HTML content that may contain non-multicol ingredient lists
+            
+        Returns:
+            str: HTML with non-multicol ingredient lists properly wrapped
+        """
+        # Pattern to match ingredient sections: <h3>Ingredients</h3> followed by
+        # lines with \dotfill and \\ until we hit the next section or other content
+        
+        def replace_ingredient_section(match):
+            section_tag = match.group(1)  # The section tag
+            content = match.group(2)  # Content between section and next section
+            
+            # Check if this content contains ingredient lines (has \dotfill)
+            if '\\dotfill' not in content:
+                return match.group(0)  # Not an ingredient list, return unchanged
+            
+            # Check if this is already in a multicols (shouldn't happen, but be safe)
+            if '\\begin{multicols}' in content or '<div class="ingredients-columns">' in content:
+                return match.group(0)  # Already handled by multicols conversion
+            
+            # Extract ingredient lines - lines that contain \dotfill followed by \\
+            lines = content.split('\n')
+            ingredient_lines = []
+            other_content = []
+            found_ingredients = False
+            
+            for i, line in enumerate(lines):
+                line_stripped = line.strip()
+                
+                # Skip empty lines and comments
+                if not line_stripped or line_stripped.startswith('%'):
+                    if found_ingredients and not other_content:
+                        # Still in ingredient block, preserve blank lines
+                        ingredient_lines.append('')
+                    elif not found_ingredients:
+                        other_content.append(line)
+                    continue
+                
+                # Check if this is an ingredient line (has \dotfill and ends with \\)
+                # LaTeX line breaks are \\, which in Python strings is represented as '\\\\'
+                # We check for \dotfill and if line ends with backslash(es) or contains \\
+                is_ingredient_line = '\\dotfill' in line and (line.rstrip().endswith('\\') or '\\\\' in line)
+                if is_ingredient_line:
+                    found_ingredients = True
+                    ingredient_lines.append(line)
+                # Check if we've hit the next section or significant content
+                elif (line_stripped.startswith('\\section') or 
+                      line_stripped.startswith('<h3>') or
+                      line_stripped.startswith('<h4>') or
+                      line_stripped.startswith('\\begin{enumerate}') or
+                      line_stripped.startswith('<ol>') or
+                      line_stripped.startswith('\\begin{itemize}') or
+                      line_stripped.startswith('<ul>')):
+                    # Hit next section or list - everything from here is not ingredients
+                    other_content.extend(lines[i:])
+                    break
+                elif found_ingredients:
+                    # We were collecting ingredients, but this line doesn't match
+                    # Check if it's just whitespace/formatting or if we should stop
+                    # If it has significant content (not just LaTeX commands), stop
+                    significant_content = re.sub(r'\\[a-zA-Z]+\{?[^}]*\}?', '', line_stripped)
+                    significant_content = re.sub(r'\{[^}]*\}', '', significant_content)
+                    if significant_content.strip():
+                        # This has real content, stop collecting ingredients
+                        other_content.extend(lines[i:])
+                        break
+                    else:
+                        # Just LaTeX formatting, might be part of ingredient block
+                        ingredient_lines.append(line)
+                else:
+                    other_content.append(line)
+            
+            # If we found ingredient lines, convert them
+            if ingredient_lines:
+                # Build the ingredient HTML
+                grid_html = '<div class="ingredients-columns">\n'
+                
+                for line in ingredient_lines:
+                    line = line.strip()
+                    if not line or line.startswith('%'):
+                        continue
+                    
+                    # Remove trailing backslashes (LaTeX line breaks: \\)
+                    # Handle both single and double backslashes
+                    line = line.rstrip('\\').strip()
+                    
+                    # Convert LaTeX fraction commands before processing
+                    line = re.sub(r'\\textonehalf(\{\})?', '½', line)
+                    line = re.sub(r'\\textonequarter(\{\})?', '¼', line)
+                    line = re.sub(r'\\textthreequarter(\{\})?', '¾', line)
+                    line = re.sub(r'\\textonethird(\{\})?', '⅓', line)
+                    line = re.sub(r'\\texttwothirds(\{\})?', '⅔', line)
+                    
+                    # Split on \dotfill to get name and amount
+                    if '\\dotfill' in line:
+                        parts = line.split('\\dotfill')
+                        if len(parts) == 2:
+                            name = parts[0].strip()
+                            amount = parts[1].strip()
+                            grid_html += f'    <div class="ingredient-item"><span class="ingredient-name">{name}</span><span class="dotfill"></span><span class="ingredient-amount">{amount}</span></div>\n'
+                        else:
+                            grid_html += f'    <div class="ingredient-item">{line}</div>\n'
+                    else:
+                        grid_html += f'    <div class="ingredient-item">{line}</div>\n'
+                
+                grid_html += '</div>\n'
+                
+                # Reconstruct the section
+                other_text = '\n'.join(other_content).strip()
+                if other_text:
+                    return f'{section_tag}\n{grid_html}{other_text}'
+                else:
+                    return f'{section_tag}\n{grid_html}'
+            
+            return match.group(0)  # No ingredient lines found, return unchanged
+        
+        # Match <h3>Ingredients</h3> followed by content until next section
+        # We need to capture everything from <h3>Ingredients</h3> until the next <h3> or other significant tag
+        # Use a more explicit pattern that stops at clear boundaries
+        pattern = r'(<h3>Ingredients</h3>)(.*?)(?=<h3>|<h4>|\\section|\\begin\{enumerate\}|<ol>|\\begin\{itemize\}|<ul>|$)'
+        
+        result = re.sub(pattern, replace_ingredient_section, html, flags=re.DOTALL)
+        return result
 
 
 class HTMLExporter:
