@@ -119,6 +119,9 @@ class LaTeXToHTMLConverter:
         # Use the helper method which handles nested braces
         html = self._convert_text_formatting(html)
         
+        # Convert \nicefrac{numerator}{denominator} commands to HTML
+        html = self._convert_nicefrac(html)
+        
         # Convert LaTeX fraction commands to HTML entities (handle both with and without braces)
         html = re.sub(r'\\textonehalf(\{\})?', '½', html)
         html = re.sub(r'\\textonequarter(\{\})?', '¼', html)
@@ -190,6 +193,44 @@ class LaTeXToHTMLConverter:
         html = html.strip()
         
         return html
+    
+    def _convert_nicefrac(self, text: str) -> str:
+        """Convert \nicefrac{numerator}{denominator} commands to HTML
+        
+        Args:
+            text: Text containing \nicefrac commands
+            
+        Returns:
+            str: Text with \nicefrac converted to HTML fractions
+            
+        Converts common fractions (1/2, 1/4, 3/4, 1/3, 2/3) to Unicode characters,
+        and other fractions to HTML sup/sub format.
+        """
+        # Map of common fractions to Unicode characters
+        fraction_map = {
+            (1, 2): '½',
+            (1, 4): '¼',
+            (3, 4): '¾',
+            (1, 3): '⅓',
+            (2, 3): '⅔',
+        }
+        
+        def replace_nicefrac(match):
+            """Replace a single \nicefrac{numerator}{denominator} match"""
+            numerator = int(match.group(1))
+            denominator = int(match.group(2))
+            
+            # Check if this is a common fraction
+            if (numerator, denominator) in fraction_map:
+                return fraction_map[(numerator, denominator)]
+            
+            # For other fractions, use HTML sup/sub format
+            return f'<sup>{numerator}</sup>/<sub>{denominator}</sub>'
+        
+        # Pattern to match \nicefrac{numerator}{denominator}
+        # This handles both standalone and with preceding numbers (e.g., 1\nicefrac{1}{2})
+        pattern = r'\\nicefrac\{(\d+)\}\{(\d+)\}'
+        return re.sub(pattern, replace_nicefrac, text)
     
     def _convert_enumerate(self, content: str) -> str:
         """Convert enumerate environment content to HTML ordered list
@@ -358,6 +399,8 @@ class LaTeXToHTMLConverter:
                 # Convert ingredient line format: "Item \dotfill Amount \\"
                 # Replace \dotfill with HTML span, remove trailing \\
                 line = line.replace('\\\\', '').strip()
+                # Convert \nicefrac commands before processing
+                line = self._convert_nicefrac(line)
                 # Convert \dotfill to HTML
                 if '\\dotfill' in line:
                     # Split on dotfill to get name and amount
@@ -470,6 +513,7 @@ class LaTeXToHTMLConverter:
                     line = line.rstrip('\\').strip()
                     
                     # Convert LaTeX fraction commands before processing
+                    line = self._convert_nicefrac(line)
                     line = re.sub(r'\\textonehalf(\{\})?', '½', line)
                     line = re.sub(r'\\textonequarter(\{\})?', '¼', line)
                     line = re.sub(r'\\textthreequarter(\{\})?', '¾', line)
