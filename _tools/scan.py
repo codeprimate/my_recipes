@@ -162,30 +162,35 @@ class RecipeScanner:
         return recipes
 
     def detect_changes(self, existing_metadata: dict, new_files: Dict[str, dict]) -> Dict[str, dict]:
-        """Compare current scan against previous build to detect changes"""
+        """Compare current scan against previous build to detect changes.
+        
+        For unchanged files: preserves ALL existing metadata (title, extracted_body, 
+        packages, preprocessed, etc.) to avoid losing build state.
+        
+        For changed/new files: uses fresh scan data with reset build state.
+        """
         updated = {}
         existing_recipes = existing_metadata.get('recipes', {})
         
         for path, metadata in new_files.items():
-            updated[path] = metadata.copy()
-            
-            # Check if file existed in previous build
             if path in existing_recipes:
                 old_mtime = datetime.fromisoformat(existing_recipes[path].get('mtime', ''))
                 new_mtime = datetime.fromisoformat(metadata.get('mtime', ''))
                 changed = old_mtime != new_mtime
                 
                 if not changed:
-                    # Preserve existing preprocessing state for unchanged files
-                    updated[path]['preprocessed'] = existing_recipes[path].get('preprocessed', False)
+                    # Unchanged: keep ALL existing metadata, just update changed flag
+                    updated[path] = existing_recipes[path].copy()
+                    updated[path]['changed'] = False
+                else:
+                    # Changed: use fresh scan data, reset build state
+                    updated[path] = metadata.copy()
+                    updated[path]['changed'] = True
+                    updated[path]['preprocessed'] = False
             else:
-                # New file, mark as changed
-                changed = True
-            updated[path]['changed'] = changed
-            
-            # Reset preprocessing flag if changed
-            if changed:
-                updated[path]['preprocessed'] = False
+                # New file: use scan data, mark as changed
+                updated[path] = metadata.copy()
+                updated[path]['changed'] = True
         
         return updated
 

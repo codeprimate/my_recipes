@@ -139,6 +139,9 @@ class LaTeXToHTMLConverter:
         # Convert escaped ampersand (LaTeX \& to HTML &)
         html = re.sub(r'\\&', '&', html)
         
+        # Convert escaped hash (LaTeX \# to HTML #)
+        html = re.sub(r'\\#', '#', html)
+        
         # Convert quotes
         html = re.sub(r'``', '"', html)
         html = re.sub(r"''", '"', html)

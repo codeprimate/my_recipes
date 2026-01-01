@@ -60,16 +60,24 @@ class RecipeBookBuilder:
         self.stage_times = {}
 
     def clean_build_dir(self) -> None:
-        """Remove all contents of the build directory"""
+        """Remove build outputs while preserving incremental build state.
+        
+        Preserves:
+        - metadata.yml: for change detection between builds
+        - bodies/: extracted recipe content for unchanged recipes
+        """
         if self.build_dir.exists():
             self.console.print("\n[bold yellow]Cleaning build directory...[/bold yellow]")
+            preserved = {'metadata.yml', 'bodies'}
             for item in self.build_dir.iterdir():
+                if item.name in preserved:
+                    continue
                 if item.is_file():
                     item.unlink()
                 elif item.is_dir():
                     import shutil
                     shutil.rmtree(item)
-            self.console.print("[dim]Build directory cleaned[/dim]")
+            self.console.print("[dim]Build directory cleaned (incremental state preserved)[/dim]")
 
     def build(self, clean: bool = True) -> Optional[Path]:
         """Execute complete build pipeline
