@@ -60,30 +60,26 @@ class RecipeBookBuilder:
         self.stage_times = {}
 
     def clean_build_dir(self) -> None:
-        """Remove build outputs while preserving incremental build state.
+        """Remove all build outputs for a fresh build.
         
-        Preserves:
-        - metadata.yml: for change detection between builds
-        - bodies/: extracted recipe content for unchanged recipes
+        This forces all recipes to be re-scanned, re-extracted, and re-processed
+        by removing the metadata.yml file that tracks changes.
         """
         if self.build_dir.exists():
             self.console.print("\n[bold yellow]Cleaning build directory...[/bold yellow]")
-            preserved = {'metadata.yml', 'bodies'}
+            import shutil
             for item in self.build_dir.iterdir():
-                if item.name in preserved:
-                    continue
                 if item.is_file():
                     item.unlink()
                 elif item.is_dir():
-                    import shutil
                     shutil.rmtree(item)
-            self.console.print("[dim]Build directory cleaned (incremental state preserved)[/dim]")
+            self.console.print("[dim]Build directory cleaned[/dim]")
 
-    def build(self, clean: bool = True) -> Optional[Path]:
+    def build(self, clean: bool = False) -> Optional[Path]:
         """Execute complete build pipeline
         
         Args:
-            clean: If True, clean build directory before building
+            clean: If True, clean build directory before building (forces full rebuild)
         
         Returns:
             Optional[Path]: Path to compiled PDF if successful, None if failed
@@ -269,7 +265,7 @@ def main():
             config_path=args.config
         )
         
-        pdf_path = builder.build()
+        pdf_path = builder.build(clean=args.clean)
         
         # Set exit code based on build success
         sys.exit(0 if pdf_path else 1)
