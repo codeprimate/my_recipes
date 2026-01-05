@@ -315,6 +315,7 @@
         .ingredients-columns {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            grid-auto-flow: column;
             column-gap: 1em;
             row-gap: 0.25em;
             margin: 1em 0;
@@ -1399,7 +1400,7 @@ Lightly beat <strong>eggs</strong>; set aside in <em>Small Bowl&nbsp;#1</em>
     <div class="ingredient-item"><span class="ingredient-name">Mexican vanilla</span><span class="dotfill"></span><span class="ingredient-amount">½ tsp.</span></div>
     <div class="ingredient-item"><span class="ingredient-name">Eggs</span><span class="dotfill"></span><span class="ingredient-amount">3</span></div>
     <div class="ingredient-item"><span class="ingredient-name">Egg yolk</span><span class="dotfill"></span><span class="ingredient-amount">1</span></div>
-    <div class="ingredient-item"><span class="ingredient-name">TrueLemon powder</span><span class="dotfill"></span><span class="ingredient-amount">1-2 tsp.</span></div>
+    <div class="ingredient-item"><span class="ingredient-name">TrueLemon powder</span><span class="dotfill"></span><span class="ingredient-amount">2 tsp.</span></div>
     <div class="ingredient-item"><span class="ingredient-name">Salt</span><span class="dotfill"></span><span class="ingredient-amount">¾ tsp.</span></div>
     <div class="ingredient-item"><span class="ingredient-name">Powdered sugar</span><span class="dotfill"></span><span class="ingredient-amount">for dusting</span></div>
     <div class="ingredient-item"><span class="ingredient-name">Flaky salt</span><span class="dotfill"></span><span class="ingredient-amount">for sprinkling</span></div>
@@ -1408,12 +1409,10 @@ Lightly beat <strong>eggs</strong>; set aside in <em>Small Bowl&nbsp;#1</em>
 <h3>Raspberry Reduction</h3>
 
 Zest all 3 <strong>Meyer lemons</strong>; set aside zest from 1&nbsp;lemon in <em>Small Bowl&nbsp;#1</em> (for crust) and zest from 2&nbsp;lemons in <em>Small Bowl&nbsp;#2</em> (for curd) &mdash;
-Juice all 3 <strong>lemons</strong> to yield ½&nbsp;cup + 2&nbsp;tsp. juice; reserve 2&nbsp;tsp. for reduction and ½&nbsp;cup in <em>Small Bowl&nbsp;#3</em> (for curd) &mdash;
-Cool reduction to room temperature before using &mdash;
-Transfer to piping bag or squeeze bottle with small round tip
+Juice all 3 <strong>lemons</strong> to yield ½&nbsp;cup + 2&nbsp;tsp. juice; reserve 2&nbsp;tsp. for reduction and ½&nbsp;cup in <em>Small Bowl&nbsp;#3</em> (for curd)
 
 <ol>
-    <li>Combine 1½&nbsp;cups <strong>fresh raspberries</strong>, ¼&nbsp;cup <strong>granulated sugar</strong>, 2&nbsp;tsp. <strong>lemon juice</strong>, and pinch of <strong>salt</strong> in a small saucepan. Bring to a simmer over medium heat, crushing <strong>berries</strong> with a wooden spoon as they soften. Cook for <em>3-4&nbsp;minutes</em> until berries have broken down completely.</li>
+    <li>Combine 1½&nbsp;cups <strong>fresh raspberries</strong>, ¼&nbsp;cup <strong>granulated sugar</strong>, 2&nbsp;tsp. <strong>lemon juice</strong>, and ¼&nbsp;tsp. <strong>salt</strong> in a small saucepan. Bring to a simmer over medium heat, crushing <strong>berries</strong> with a wooden spoon as they soften. Cook for <em>3-4&nbsp;minutes</em> until berries have broken down completely.</li>
     <li>Press mixture through a fine-mesh sieve into <em>Small Bowl&nbsp;#4</em>, using a silicone spatula to extract all liquid and leave seeds behind. Discard seeds. You should have about ¾&nbsp;cup strained raspberry liquid.</li>
     <li>Return strained liquid to the saucepan. Mix 1&nbsp;tsp. <strong>cornstarch</strong> with 1&nbsp;tsp. cold water in a small cup until smooth. Whisk cornstarch slurry into <strong>raspberry liquid</strong>.</li>
     <li>Simmer over medium-low heat, stirring frequently, until mixture is reduced by half and has thickened to a honey-like consistency, about <em>8-10&nbsp;minutes</em>. The reduction should coat the back of a spoon thickly and mound slightly when dripped. It will thicken further as it cools.</li>
@@ -1438,7 +1437,7 @@ Cut 6&nbsp;Tbsp. <strong>butter</strong> into tablespoon pieces; set aside in <e
 
 <ol>
     <li>While crust bakes, whisk together ⅔&nbsp;cup <strong>granulated sugar</strong> and 1&nbsp;tsp. <strong>cornstarch</strong> in a medium saucepan. Add <strong>eggs</strong> and <strong>egg yolk</strong>, whisking until smooth.</li>
-    <li>Add <strong>lemon juice</strong> (½&nbsp;cup, <em>Small Bowl&nbsp;#3</em>), <strong>lemon zest</strong> (<em>Small Bowl&nbsp;#2</em>), 1-2&nbsp;tsp. <strong>TrueLemon powder</strong>, and ¼&nbsp;tsp. <strong>salt</strong>. Whisk to combine.</li>
+    <li>Add <strong>lemon juice</strong> (½&nbsp;cup, <em>Small Bowl&nbsp;#3</em>), <strong>lemon zest</strong> (<em>Small Bowl&nbsp;#2</em>), 2&nbsp;tsp. <strong>TrueLemon powder</strong>, and ¼&nbsp;tsp. <strong>salt</strong>. Whisk to combine.</li>
     <li>Cook over medium-low heat, stirring constantly with a silicone spatula or wooden spoon, scraping the bottom and sides of the pan. Cook until mixture thickens noticeably and reaches <em>170°F</em>, about <em>8-10&nbsp;minutes</em>. The curd should coat the back of a spoon and leave a clear trail when you draw your finger through it.</li>
     <li>Remove from heat and immediately stir in 6&nbsp;Tbsp. <strong>butter</strong> (<em>Small Bowl&nbsp;#6</em>), one piece at a time, until fully incorporated and smooth.</li>
     <li>Strain the hot curd through a fine-mesh sieve into <em>Small Bowl&nbsp;#7</em> to remove <strong>zest</strong> bits and any cooked egg pieces.</li>
@@ -3849,6 +3848,22 @@ Remove stems from <strong>kale</strong> and tear leaves into bite sized pieces; 
 
         // Initial update
         updateActiveNav();
+
+        // Set up columnar flow for ingredient grids
+        function setupColumnarIngredients() {
+            document.querySelectorAll('.ingredients-columns').forEach(grid => {
+                const items = grid.querySelectorAll('.ingredient-item');
+                const itemCount = items.length;
+                if (itemCount > 0) {
+                    // Calculate number of rows needed (half rounded up)
+                    const rows = Math.ceil(itemCount / 2);
+                    grid.style.gridTemplateRows = `repeat(${rows}, min-content)`;
+                }
+            });
+        }
+
+        // Run on page load
+        setupColumnarIngredients();
     </script>
 </body>
 </html>

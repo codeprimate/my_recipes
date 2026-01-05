@@ -315,6 +315,7 @@
         .ingredients-columns {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            grid-auto-flow: column;
             column-gap: 1em;
             row-gap: 0.25em;
             margin: 1em 0;
@@ -669,6 +670,22 @@
 
         // Initial update
         updateActiveNav();
+
+        // Set up columnar flow for ingredient grids
+        function setupColumnarIngredients() {
+            document.querySelectorAll('.ingredients-columns').forEach(grid => {
+                const items = grid.querySelectorAll('.ingredient-item');
+                const itemCount = items.length;
+                if (itemCount > 0) {
+                    // Calculate number of rows needed (half rounded up)
+                    const rows = Math.ceil(itemCount / 2);
+                    grid.style.gridTemplateRows = `repeat(${rows}, min-content)`;
+                }
+            });
+        }
+
+        // Run on page load
+        setupColumnarIngredients();
     </script>
 </body>
 </html>
