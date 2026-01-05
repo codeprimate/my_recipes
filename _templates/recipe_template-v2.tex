@@ -2,12 +2,22 @@
 \usepackage{fontspec}
 \usepackage{tocloft}
 \usepackage{multicol}
-\usepackage[left=1.4in,right=1.5in,top=1in,bottom=1in]{geometry}
-\setmainfont[Scale=1.4,AutoFakeBold=1.5,AutoFakeSlant=0.3]{Doves Type}
+\usepackage{fancyhdr}
+\usepackage{nicefrac}
+\usepackage[left=1.3in,right=1.3in,top=1in,bottom=1in]{geometry}
+\setmainfont[Scale=1.3,AutoFakeBold=1.5,AutoFakeSlant=0.3]{Doves Type}
 
 \title{Recipe Template v2}
 \author{}
 \date{}
+
+% Configure fancy header
+\pagestyle{fancy}
+\fancyhf{} % Clear all header and footer fields
+\fancyhead[C]{\textit{Recipe Template v2}} % Center header with recipe title
+\fancyfoot[C]{\thepage} % Center page number at bottom
+\renewcommand{\headrulewidth}{0pt} % Remove header line
+\renewcommand{\footrulewidth}{0pt} % Remove footer line
 
 \begin{document}
 
@@ -23,16 +33,16 @@
     Sweet Italian sausage \dotfill 1 lb. \\
     Shallot, medium \dotfill 1 \\
     Garlic cloves \dotfill 4 \\
-    White wine OR chicken broth \dotfill ¼ cup \\
+    White wine OR chicken broth \dotfill \nicefrac{1}{4} cup \\
     \columnbreak
     Cream cheese, softened \dotfill 4 oz. \\
     Parmesan, grated \dotfill 4 oz. \\
     Dried oregano \dotfill 1 tsp. \\
-    Dried thyme \dotfill ½ tsp. \\
-    MSG \dotfill ½ tsp. \\
-    Salt \dotfill ¾ tsp. \\
-    Black pepper \dotfill ½ tsp. \\
-    Red pepper flakes \dotfill ¼ tsp. (optional) \\
+    Dried thyme \dotfill \nicefrac{1}{2} tsp. \\
+    MSG \dotfill \nicefrac{1}{2} tsp. \\
+    Salt \dotfill \nicefrac{3}{4} tsp. \\
+    Black pepper \dotfill \nicefrac{1}{2} tsp. \\
+    Red pepper flakes \dotfill \nicefrac{1}{4} tsp. (optional) \\
     Fresh parsley, chopped \dotfill 2 Tbsp. \\
 \end{multicols}
 
@@ -46,13 +56,13 @@ Toast \textbf{bread} and process into coarse crumbs; set aside in \textit{Medium
 Dice \textbf{shallot} and mince \textbf{garlic}; combine in \textit{Small Bowl~\#2} (aromatics) ---
 Soften \textbf{cream cheese} at room temperature; combine with 3~oz. grated \textbf{parmesan} in \textit{Medium Bowl~\#2} (dairy) ---
 Reserve 1~oz. \textbf{parmesan} for topping in \textit{Small Bowl~\#3} ---
-Combine 1~tsp. \textbf{oregano}, ½~tsp. \textbf{thyme}, ½~tsp. \textbf{MSG}, ¾~tsp. \textbf{salt}, ½~tsp. \textbf{black pepper}, and ¼~tsp. \textbf{red pepper flakes} in \textit{Small Bowl~\#4} (seasoning) ---
+Combine 1~tsp. \textbf{oregano}, \nicefrac{1}{2}~tsp. \textbf{thyme}, \nicefrac{1}{2}~tsp. \textbf{MSG}, \nicefrac{3}{4}~tsp. \textbf{salt}, \nicefrac{1}{2}~tsp. \textbf{black pepper}, and \nicefrac{1}{4}~tsp. \textbf{red pepper flakes} in \textit{Small Bowl~\#4} (seasoning) ---
 Chop \textbf{parsley}; set aside in \textit{Small Bowl~\#5}
 
 \begin{enumerate}
     \item Place \textbf{mushroom caps} gill-side up on a rimmed baking sheet. Bake for \textit{10~minutes} to release moisture. Remove and set aside.
     
-    \item Toast \textbf{gluten-free bread} until golden and crispy. Process in food processor or crush by hand into coarse crumbs (about 1½~cups). Transfer to \textit{Medium Bowl~\#1}.
+    \item Toast \textbf{gluten-free bread} until golden and crispy. Process in food processor or crush by hand into coarse crumbs (about 1\nicefrac{1}{2}~cups). Transfer to \textit{Medium Bowl~\#1}.
     
     \item In a large skillet, brown \textbf{Italian sausage} over medium heat, breaking into small crumbles, until fully cooked, about \textit{8-10~minutes}. Remove sausage with slotted spoon and transfer to \textit{Medium Bowl~\#3}; set aside. Reserve 2-3~Tbsp. of rendered fat in the skillet, discarding excess.
     
