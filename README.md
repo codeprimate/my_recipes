@@ -13,7 +13,8 @@ A curated collection of recipes organized by category:
 - **Breads and Pastries** - Baked goods and desserts
 - **Breakfast** - Morning meals
 - **Entrees** - Main dishes
-- **Sauces and Seasonings** - Condiments and spice blends
+- **Sauces** - Condiments and prepared sauces
+- **Seasonings** - Spice blends and dry seasonings
 - **Sides** - Accompaniments
 - **Snacks** - Quick bites
 - **Soups** - Hearty soups and stews
