@@ -159,6 +159,9 @@ class LaTeXToHTMLConverter:
         # Convert hrulefill
         html = re.sub(r'\\hrulefill', '<hr class="section-divider">', html)
         
+        # Remove dinkus (recipe continuation marker) - omitted from HTML output
+        html = re.sub(r'\\dinkus', '', html)
+        
         # Remove font size commands and braces
         html = re.sub(r'\\small\s*', '', html)
         html = re.sub(r'\\large\s*', '', html)
@@ -722,14 +725,26 @@ class HTMLExporter:
             'include_toc': self.config['style'].get('include_toc', True)
         }
         
-        # Get ordered section names
+        # Helper function to extract numeric prefix for sorting
+        def get_section_sort_key(section_name: str) -> tuple:
+            """Extract numeric prefix for sorting, return (number, name) tuple"""
+            match = re.match(r'^(\d+)\s*[-]?\s*(.+)', section_name)
+            if match:
+                return (int(match.group(1)), section_name)
+            # No numeric prefix - sort alphabetically after numbered sections
+            return (999, section_name)
+        
+        # Get ordered section names (sorted by numeric prefix if present)
         ordered_sections = sorted(
             set(recipe['section'] for recipe in self.metadata['recipes'].values()),
-            key=lambda x: x.lstrip('0123456789-')
+            key=get_section_sort_key
         )
         
-        # Group and sort recipes by section, converting to HTML
+        # Group and sort recipes by section, converting to HTML, using formatted title from metadata for display
         for section in ordered_sections:
+            # Get formatted section title from metadata (already has numbers stripped by scan.py)
+            formatted_title = self.metadata.get('sections', {}).get(section, section)
+            
             section_recipes = []
             for recipe in self.metadata['recipes'].values():
                 if recipe['section'] == section:
@@ -746,7 +761,8 @@ class HTMLExporter:
                     })
             
             section_recipes.sort(key=lambda x: x['title'].lower())
-            template_vars['sections'][section] = section_recipes
+            # Use formatted title from metadata as the key for template
+            template_vars['sections'][formatted_title] = section_recipes
         
         return template_vars
     

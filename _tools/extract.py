@@ -95,6 +95,36 @@ class RecipeExtractor:
         self.metadata = load_metadata(self.metadata_path)
         self.errors = []
 
+    def insert_dinkus_before_newpage(self, content: str) -> str:
+        """Insert dinkus before \\newpage commands in recipe body.
+        
+        This adds a typographical marker (dinkus) before page breaks within
+        recipe bodies to indicate continuation on the next page. The dinkus
+        appears between the main recipe content and extended sections like
+        Equipment and Hints/Notes.
+        
+        Args:
+            content: LaTeX content extracted from recipe file
+            
+        Returns:
+            str: Content with dinkus inserted before \\newpage commands
+        """
+        import re
+        
+        # Pattern to match \newpage on its own line (with optional whitespace)
+        # This ensures we only match standalone \newpage commands, not those
+        # that are part of other commands or complex structures
+        # Match: newline, optional whitespace, \newpage, optional whitespace, newline
+        pattern = r'(\n\s*\\newpage\s*\n)'
+        
+        # Replace with: same whitespace/newlines, but insert dinkus before newpage
+        replacement = r'\n\\dinkus\1'
+        
+        # Apply replacement
+        processed = re.sub(pattern, replacement, content)
+        
+        return processed
+
     def extract_content(self, recipe_path: Path) -> Tuple[str, Set[str], Optional[str]]:
         """Extract content and package requirements from a LaTeX recipe file.
 
@@ -139,6 +169,9 @@ class RecipeExtractor:
                 
         if not content:
             raise ValueError(f"No content found between document tags in {recipe_path}")
+        
+        # Insert dinkus before \newpage commands within recipe body
+        content = self.insert_dinkus_before_newpage(content)
             
         return content.strip(), packages, title
 

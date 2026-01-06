@@ -55,6 +55,7 @@ Example metadata.yml structure:
 import os
 import sys
 import yaml
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -123,16 +124,17 @@ class RecipeScanner:
         Args:
             directory: Raw directory name
         Returns:
-            Formatted section title
+            Formatted section title (without numeric prefix)
         """
-        # Remove numeric prefix if present (e.g., "01-")
-        name = directory.split('-', 1)[-1] if '-' in directory else directory
+        # Remove numeric prefix if present (e.g., "01-", "01 ")
+        # Match leading digits followed by dash or space
+        name = re.sub(r'^\d+\s*[-]?\s*', '', directory)
         
         # Replace underscores/hyphens with spaces
         name = name.replace('-', ' ').replace('_', ' ')
         
-        # Capitalize words
-        return name.title()
+        # Strip and capitalize words
+        return name.strip().title()
 
     def scan_recipe_files(self, section_dirs: Dict[str, str]) -> Dict[str, dict]:
         """Scan sections for recipe files

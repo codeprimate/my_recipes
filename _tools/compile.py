@@ -19,9 +19,10 @@ Developer Notes:
 from pathlib import Path
 from typing import Dict, List, Optional
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 import jinja2
 import subprocess
+import re
 from rich.console import Console
 from rich.table import Table
 
@@ -246,14 +247,26 @@ class BookCompiler:
             'index': self.config['style'].get('include_index', False)
         }
         
-        # Get ordered section names
+        # Helper function to extract numeric prefix for sorting
+        def get_section_sort_key(section_name: str) -> tuple:
+            """Extract numeric prefix for sorting, return (number, name) tuple"""
+            match = re.match(r'^(\d+)\s*[-]?\s*(.+)', section_name)
+            if match:
+                return (int(match.group(1)), section_name)
+            # No numeric prefix - sort alphabetically after numbered sections
+            return (999, section_name)
+        
+        # Get ordered section names (sorted by numeric prefix if present)
         ordered_sections = sorted(
             set(recipe['section'] for recipe in self.metadata['recipes'].values()),
-            key=lambda x: x.lstrip('0123456789-')
+            key=get_section_sort_key
         )
         
-        # Group and sort recipes by section
+        # Group and sort recipes by section, using formatted title from metadata for display
         for section in ordered_sections:
+            # Get formatted section title from metadata (already has numbers stripped by scan.py)
+            formatted_title = self.metadata.get('sections', {}).get(section, section)
+            
             section_recipes = [
                 {
                     **recipe,
@@ -264,9 +277,89 @@ class BookCompiler:
                 if recipe['section'] == section
             ]
             section_recipes.sort(key=lambda x: x.get('title', '').lower())
-            template_vars['sections'][section] = section_recipes
+            # Use formatted title from metadata as the key for template
+            template_vars['sections'][formatted_title] = section_recipes
+        
+        # Add recently modified recipes
+        template_vars['recently_modified'] = self._get_recently_modified_recipes()
         
         return template_vars
+
+    def _get_recently_modified_recipes(self) -> Dict:
+        """Get recipes modified this month and last month.
+        
+        Returns:
+            Dict with keys:
+                - this_month: Dict with 'name' (month name) and 'recipes' (list)
+                - last_month: Dict with 'name' (month name) and 'recipes' (list)
+            Each recipe in the lists includes:
+                - title: Recipe title
+                - date: Formatted date string (e.g., "January 5, 2026")
+                - mtime: Original modification time for sorting
+        """
+        now = datetime.now()
+        
+        # Calculate month boundaries
+        this_month_start = datetime(now.year, now.month, 1)
+        if now.month == 1:
+            last_month_start = datetime(now.year - 1, 12, 1)
+            last_month_end = datetime(now.year, 1, 1)
+        else:
+            last_month_start = datetime(now.year, now.month - 1, 1)
+            last_month_end = datetime(now.year, now.month, 1)
+        
+        this_month_recipes = []
+        last_month_recipes = []
+        
+        for recipe_path, recipe in self.metadata['recipes'].items():
+            try:
+                # Parse modification time
+                mtime_str = recipe.get('mtime', '')
+                if not mtime_str:
+                    continue
+                
+                if isinstance(mtime_str, str):
+                    mtime = datetime.fromisoformat(mtime_str)
+                else:
+                    # Fallback for numeric timestamps
+                    mtime = datetime.fromtimestamp(float(mtime_str))
+                
+                # Format date for display (e.g., "January 5, 2026")
+                # Use %d and strip leading zero for cross-platform compatibility
+                day = mtime.day
+                date_str = mtime.strftime(f'%B {day}, %Y')
+                
+                recipe_data = {
+                    'title': recipe.get('title', ''),
+                    'date': date_str,
+                    'mtime': mtime
+                }
+                
+                # Categorize by month
+                if mtime >= this_month_start:
+                    this_month_recipes.append(recipe_data)
+                elif mtime >= last_month_start and mtime < last_month_end:
+                    last_month_recipes.append(recipe_data)
+                    
+            except (ValueError, TypeError) as e:
+                # Skip recipes with invalid mtime
+                logging.debug(f"Skipping recipe {recipe_path} due to invalid mtime: {e}")
+                continue
+        
+        # Sort by recipe name alphabetically within each month
+        this_month_recipes.sort(key=lambda x: x['title'].lower())
+        last_month_recipes.sort(key=lambda x: x['title'].lower())
+        
+        return {
+            'this_month': {
+                'name': now.strftime('%B %Y'),  # e.g., "January 2026"
+                'recipes': this_month_recipes
+            },
+            'last_month': {
+                'name': last_month_start.strftime('%B %Y'),  # e.g., "December 2025"
+                'recipes': last_month_recipes
+            }
+        }
 
     def render_template(self, packages: List[str]) -> str:
         """Render the LaTeX template
