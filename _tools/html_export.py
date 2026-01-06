@@ -139,8 +139,8 @@ class LaTeXToHTMLConverter:
         # Convert non-breaking spaces
         html = re.sub(r'~', '&nbsp;', html)
         
-        # Convert escaped ampersand (LaTeX \& to HTML &)
-        html = re.sub(r'\\&', '&', html)
+        # Convert escaped ampersand (LaTeX \& to HTML &amp;)
+        html = re.sub(r'\\&', '&amp;', html)
         
         # Convert escaped hash (LaTeX \# to HTML #)
         html = re.sub(r'\\#', '#', html)
@@ -150,8 +150,11 @@ class LaTeXToHTMLConverter:
         html = re.sub(r"''", '"', html)
         html = re.sub(r'`', "'", html)
         
-        # Convert em dash
+        # Convert em dash (triple dash) first, before en dash conversion
         html = re.sub(r'---', '&mdash;', html)
+        
+        # Convert en dash (double dash) to single dash
+        html = re.sub(r'--', '-', html)
         
         # Convert hrulefill
         html = re.sub(r'\\hrulefill', '<hr class="section-divider">', html)
@@ -677,6 +680,21 @@ class HTMLExporter:
             })
             return f'<p class="error">Error converting recipe: {str(e)}</p>'
     
+    def convert_title_escapes(self, title: str) -> str:
+        """Convert LaTeX escape sequences in recipe titles to HTML
+        
+        Args:
+            title: Recipe title that may contain LaTeX escapes
+            
+        Returns:
+            str: Title with LaTeX escapes converted to HTML
+        """
+        # Convert escaped ampersand (LaTeX \& to HTML &amp;)
+        title = re.sub(r'\\&', '&amp;', title)
+        # Convert escaped hash (LaTeX \# to HTML #)
+        title = re.sub(r'\\#', '#', title)
+        return title
+    
     def prepare_template_vars(self) -> Dict:
         """Prepare variables for HTML template rendering
         
@@ -719,8 +737,11 @@ class HTMLExporter:
                     body_path = self.build_dir / recipe['extracted_body']
                     html_content = self.convert_recipe_to_html(body_path)
                     
+                    # Convert LaTeX escapes in title
+                    title = self.convert_title_escapes(recipe['title'])
+                    
                     section_recipes.append({
-                        'title': recipe['title'],
+                        'title': title,
                         'html_content': html_content
                     })
             
