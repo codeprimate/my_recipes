@@ -49,7 +49,7 @@ A build system that converts a collection of LaTeX recipe files into a beautiful
    title: "Your Cookbook Name"
    authorship:
      author: "Your Name"
-     version: "2024 Edition"
+     version: "2026 Edition"
    build:
      html_export: true  # Enable HTML export (requires Pandoc)
      html_output_dir: "html"
@@ -148,7 +148,7 @@ Contributions are welcome! Submit pull requests to my repository.
 
 MIT License
 
-Copyright (c) codeprimate 2024
+Copyright (c) codeprimate 2024-2026
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

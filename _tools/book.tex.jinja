@@ -137,7 +137,7 @@
 \printindex
 {% endif %}
 
-{% if recently_modified.this_month.recipes or recently_modified.last_month.recipes %}
+{% if recently_modified %}
 \appendix
 \chapter{REVISIONS}
 \thispagestyle{plain}
@@ -150,23 +150,11 @@
 
 \thispagestyle{fancy}
 
-{% if recently_modified.this_month.recipes %}
-\section*{ {{- recently_modified.this_month.name -}} }
 \begin{description}
-{% for recipe in recently_modified.this_month.recipes %}
+{% for recipe in recently_modified %}
 \item[ {{- recipe.title -}} ] \dotfill {{ recipe.date }}
 {% endfor %}
 \end{description}
-{% endif %}
-
-{% if recently_modified.last_month.recipes %}
-\section*{ {{- recently_modified.last_month.name -}} }
-\begin{description}
-{% for recipe in recently_modified.last_month.recipes %}
-\item[ {{- recipe.title -}} ] \dotfill {{ recipe.date }}
-{% endfor %}
-\end{description}
-{% endif %}
 
 \vspace*{\fill}
 \hrulefill

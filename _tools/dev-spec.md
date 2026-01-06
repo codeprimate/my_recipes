@@ -79,6 +79,7 @@ style:
   twoside: true
   include_toc: true
   include_index: false
+  revisions_limit: 20  # Number of recent revisions to show in appendix (default: )
   geometry:
     top: 1in
     bottom: 1in
@@ -94,7 +95,7 @@ build:
   output_dir: "_build"  # Build directory for all artifacts
   html_export: true  # Enable HTML export (uses custom converter, no external dependencies)
   html_output_dir: "html"  # Subdirectory for HTML output
-latex_compiler: "xelatex"  # LaTeX compiler to use (xelatex or pdflatex)
+  latex_compiler: "xelatex"  # LaTeX compiler to use (xelatex or pdflatex)
 ```
 
 ### _build/metadata.yml
@@ -247,7 +248,7 @@ extraction_errors:  # Tracks any errors during extraction
   - Book metadata (title, author, date formatted from last_build)
   - Style configuration (geometry, fonts, document class options)
   - Recipe content organized by section (sorted by title within sections)
-  - Recently modified recipes (this month and last month) for optional REVISIONS appendix
+  - Recently modified recipes (flat list, configurable limit) for optional REVISIONS appendix
   - Twoside flag for two-sided document handling
   - Index flag for index generation
 - Renders Jinja2 template with strict whitespace control (`trim_blocks=True`, `lstrip_blocks=True`)
@@ -328,10 +329,12 @@ extraction_errors:  # Tracks any errors during extraction
 ## Key Features
 
 ### Recently Modified Recipes
-- Tracks recipes modified in current month and previous month
+- Tracks all recipes with modification times
 - Automatically generates REVISIONS appendix in PDF output
-- Shows recipe title and formatted modification date
-- Only appears if there are recipes modified in the tracked periods
+- Shows a flat list of the latest modified recipes in descending chronological order
+- Displays recipe title and formatted modification date
+- Number of revisions shown is configurable via `revisions_limit` in `book.yml` (default: 30)
+- Only appears if there are recipes with valid modification times
 
 ### Incremental Builds
 - Only processes recipes that have changed since last build

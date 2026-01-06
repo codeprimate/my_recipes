@@ -12,6 +12,7 @@ style:
   twoside: true
   include_toc: true
   include_index: false
+  revisions_limit: 30
   geometry:
     top: 1in
     bottom: 1in
@@ -26,4 +27,5 @@ build:
   source: ""
   output_dir: "_build"
   html_export: true
-  html_output_dir: "html" 
+  html_output_dir: "html"
+  latex_compiler: "xelatex"

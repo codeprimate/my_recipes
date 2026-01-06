@@ -280,36 +280,27 @@ class BookCompiler:
             # Use formatted title from metadata as the key for template
             template_vars['sections'][formatted_title] = section_recipes
         
-        # Add recently modified recipes
-        template_vars['recently_modified'] = self._get_recently_modified_recipes()
+        # Add recently modified recipes (flat list, configurable limit)
+        revisions_limit = self.config['style'].get('revisions_limit', 30)
+        template_vars['recently_modified'] = self._get_recently_modified_recipes(revisions_limit)
         
         return template_vars
 
-    def _get_recently_modified_recipes(self) -> Dict:
-        """Get recipes modified this month and last month.
+    def _get_recently_modified_recipes(self, limit: int = 30) -> List[Dict]:
+        """Get the latest modified recipes ordered by calendar day then recipe name.
+        
+        Args:
+            limit: Maximum number of recipes to return (default: 30)
         
         Returns:
-            Dict with keys:
-                - this_month: Dict with 'name' (month name) and 'recipes' (list)
-                - last_month: Dict with 'name' (month name) and 'recipes' (list)
-            Each recipe in the lists includes:
+            List of recipe dicts, each containing:
                 - title: Recipe title
                 - date: Formatted date string (e.g., "January 5, 2026")
                 - mtime: Original modification time for sorting
+            Sorted by calendar day (descending, newest first), then by recipe name (ascending),
+            limited to `limit` items.
         """
-        now = datetime.now()
-        
-        # Calculate month boundaries
-        this_month_start = datetime(now.year, now.month, 1)
-        if now.month == 1:
-            last_month_start = datetime(now.year - 1, 12, 1)
-            last_month_end = datetime(now.year, 1, 1)
-        else:
-            last_month_start = datetime(now.year, now.month - 1, 1)
-            last_month_end = datetime(now.year, now.month, 1)
-        
-        this_month_recipes = []
-        last_month_recipes = []
+        all_recipes = []
         
         for recipe_path, recipe in self.metadata['recipes'].items():
             try:
@@ -335,31 +326,19 @@ class BookCompiler:
                     'mtime': mtime
                 }
                 
-                # Categorize by month
-                if mtime >= this_month_start:
-                    this_month_recipes.append(recipe_data)
-                elif mtime >= last_month_start and mtime < last_month_end:
-                    last_month_recipes.append(recipe_data)
+                all_recipes.append(recipe_data)
                     
             except (ValueError, TypeError) as e:
                 # Skip recipes with invalid mtime
                 logging.debug(f"Skipping recipe {recipe_path} due to invalid mtime: {e}")
                 continue
         
-        # Sort by recipe name alphabetically within each month
-        this_month_recipes.sort(key=lambda x: x['title'].lower())
-        last_month_recipes.sort(key=lambda x: x['title'].lower())
-        
-        return {
-            'this_month': {
-                'name': now.strftime('%B %Y'),  # e.g., "January 2026"
-                'recipes': this_month_recipes
-            },
-            'last_month': {
-                'name': last_month_start.strftime('%B %Y'),  # e.g., "December 2025"
-                'recipes': last_month_recipes
-            }
-        }
+        # Sort by calendar day (descending, newest first), then by recipe name (ascending)
+        all_recipes.sort(key=lambda x: (
+            -x['mtime'].toordinal(),  # Negative for descending order (newest day first)
+            x['title'].lower()  # Recipe name ascending
+        ))
+        return all_recipes[:limit]
 
     def render_template(self, packages: List[str]) -> str:
         """Render the LaTeX template
@@ -402,7 +381,7 @@ class BookCompiler:
 
     def run_latex_compiler(self, tex_path: Path, output_path: Path) -> bool:
         """Run LaTeX compiler to generate PDF output"""
-        compiler = self.config.get('latex_compiler', 'xelatex')
+        compiler = self.config['build'].get('latex_compiler', 'xelatex')
         
         try:
             # Track which file we're actually compiling
