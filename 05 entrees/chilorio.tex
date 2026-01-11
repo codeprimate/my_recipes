@@ -2,12 +2,22 @@
 \usepackage{fontspec}
 \usepackage{tocloft}
 \usepackage{multicol}
-\usepackage[left=1.4in,right=1.5in,top=1in,bottom=1in]{geometry}
-\setmainfont[Scale=1.4,AutoFakeBold=1.5,AutoFakeSlant=0.3]{Doves Type}
+\usepackage{fancyhdr}
+\usepackage{nicefrac}
+\usepackage[left=1.3in,right=1.3in,top=1in,bottom=1in]{geometry}
+\setmainfont[Scale=1.3,AutoFakeBold=1.5,AutoFakeSlant=0.3]{Doves Type}
 
 \title{Chilorio Tacos}
 \author{}
 \date{}
+
+% Configure fancy header
+\pagestyle{fancy}
+\fancyhf{} % Clear all header and footer fields
+\fancyhead[C]{\textit{Chilorio Tacos}} % Center header with recipe title
+\fancyfoot[C]{\thepage} % Center page number at bottom
+\renewcommand{\headrulewidth}{0pt} % Remove header line
+\renewcommand{\footrulewidth}{0pt} % Remove footer line
 
 \begin{document}
 
@@ -25,14 +35,14 @@
     Mexican oregano \dotfill 2 tsp. \\
     Black pepper, ground \dotfill 1 tsp. \\
     \columnbreak
-    Ground cumin \dotfill ½ tsp. \\
-    Cider vinegar \dotfill ¼ cup \\
+    Ground cumin \dotfill \nicefrac{1}{2} tsp. \\
+    Cider vinegar \dotfill \nicefrac{1}{4} cup \\
     Kosher salt \dotfill 3 tsp. \\
-    Lard \dotfill ¼ cup \\
+    Lard \dotfill \nicefrac{1}{4} cup \\
     Corn or flour tortillas \dotfill 24 \\
-    Tomatillo salsa \dotfill 1½ cups \\
-    White onion, chopped \dotfill 1½ cups \\
-    Fresh cilantro, chopped \dotfill 1½ cups \\
+    Tomatillo salsa \dotfill 1\nicefrac{1}{2} cups \\
+    White onion, chopped \dotfill 1\nicefrac{1}{2} cups \\
+    Fresh cilantro, chopped \dotfill 1\nicefrac{1}{2} cups \\
 \end{multicols}
 
 \section*{Directions}
@@ -40,21 +50,22 @@
 \noindent
 Preheat oven to \textit{325°F} ---
 Trim \textbf{pork~shoulder} of about half the visible fat ---
-Cut \textbf{pork} into 1-inch cubes ---
+Cut \textbf{pork} into 1-inch cubes; place in \textit{Large Bowl~\#1} (pork) ---
 Stem and seed \textbf{ancho~chiles} ---
 Tear \textbf{chiles} into large pieces ---
-Peel and roughly chop \textbf{garlic} ---
+Peel and roughly chop \textbf{garlic}; place in \textit{Small Bowl~\#1} (aromatics) ---
+Combine 2~tsp. \textbf{oregano}, 1~tsp. \textbf{black~pepper}, and \nicefrac{1}{2}~tsp. \textbf{cumin} in \textit{Small Bowl~\#2} (spices) ---
 Juice fresh \textbf{oranges} ---
-Chop \textbf{onion} and \textbf{cilantro} for serving
+Chop \textbf{onion} and \textbf{cilantro}; combine in \textit{Small Bowl~\#3} (serving)
 
 \begin{enumerate}
-    \item Heat a dry cast-iron skillet or comal over medium heat. Working in batches, toast \textbf{ancho~chile} pieces for \textit{15-30~seconds} per side until fragrant and slightly darkened. Be vigilant—burned \textbf{chiles} turn bitter. Transfer to a bowl.
+    \item Heat a dry cast-iron skillet or comal over medium heat. Working in batches, toast \textbf{ancho~chile} pieces for \textit{15-30~seconds} per side until fragrant and slightly darkened. Be vigilant—burned \textbf{chiles} turn bitter. Transfer to \textit{Medium Bowl~\#1}.
     
-    \item In a blender, combine \textbf{orange~juice}, toasted \textbf{ancho~chiles}, \textbf{garlic}, \textbf{oregano}, \textbf{black~pepper}, \textbf{cumin}, \textbf{vinegar}, and 3~tsp. \textbf{kosher~salt}. Blend on high until completely smooth, about \textit{1-2~minutes}. Strain through a medium-mesh sieve into a bowl, pressing solids to extract maximum flavor. Discard solids.
+    \item In a blender, combine \textbf{orange~juice}, toasted \textbf{ancho~chiles} (\textit{Medium Bowl~\#1}), \textbf{garlic} (\textit{Small Bowl~\#1}), 2~tsp. \textbf{oregano}, 1~tsp. \textbf{black~pepper}, and \nicefrac{1}{2}~tsp. \textbf{cumin} (\textit{Small Bowl~\#2}), \nicefrac{1}{4}~cup \textbf{vinegar}, and 3~tsp. \textbf{kosher~salt}. Blend on high until completely smooth, about \textit{1-2~minutes}. Strain through a medium-mesh sieve into \textit{Medium Bowl~\#2}, pressing solids to extract maximum flavor. Discard solids.
     
-    \item Heat a large Dutch oven (at least 6-quart capacity) over medium-high heat. Working in batches to avoid crowding, sear \textbf{pork~cubes} on at least two sides until deeply golden brown, about \textit{3-4~minutes} per side. Remove to a plate. The rendered \textbf{pork~fat} left in the pot will contribute to the final dish—do not discard.
+    \item Heat a large Dutch oven (at least 6-quart capacity) over medium-high heat. Working in batches to avoid crowding, sear \textbf{pork~cubes} (\textit{Large Bowl~\#1}) on at least two sides until deeply golden brown, about \textit{3-4~minutes} per side. Transfer to \textit{Large Bowl~\#2}. The rendered \textbf{pork~fat} left in the pot will contribute to the final dish—do not discard.
     
-    \item Pour the strained \textbf{chile~mixture} into the Dutch oven. Return all \textbf{pork} to the pot, stirring to coat evenly. The liquid should come about halfway up the \textbf{pork}—add water if needed. Bring to a simmer over medium-high heat.
+    \item Pour the strained \textbf{chile~mixture} (\textit{Medium Bowl~\#2}) into the Dutch oven. Return all \textbf{pork} (\textit{Large Bowl~\#2}) to the pot, stirring to coat evenly. The liquid should come about halfway up the \textbf{pork}—add water if needed. Bring to a simmer over medium-high heat.
     
     \item Cover tightly with lid and transfer to \textit{325°F} oven. Braise for \textit{2½-3~hours}, checking occasionally, until \textbf{pork} is completely tender and easily pulls apart with a fork. Internal temperature should reach \textit{195-205°F}. The braising time allows tough shoulder fibers to break down into tender strands.
     
