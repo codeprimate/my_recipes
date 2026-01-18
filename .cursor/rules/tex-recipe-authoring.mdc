@@ -1,0 +1,157 @@
+---
+description: LaTeX recipe authoring rules and formatting standards for recipe .tex files
+globs: ["**/*.tex"]
+alwaysApply: false
+---
+
+# LaTeX Recipe Authoring Rules
+
+**This rule auto-attaches when editing `.tex` recipe files.**
+
+When working with LaTeX recipe files (`.tex`), you MUST strictly follow the authoring rules and formatting demonstrated in the recipe template. Reference the following files for complete guidance:
+
+- **Template**: `_templates/recipe_template-v2.tex` - Reference for all technical specifications, document structure, and formatting patterns
+- **Authoring Guide**: `docs/RECIPE-AUTHORING.md` - Information architecture and presentation principles
+- **Formatting Rules**: `AGENTS.md` - Complete LaTeX formatting requirements and recipe validation framework
+
+## Critical Requirements
+
+### 1. Template Reference
+- **ALWAYS** reference `_templates/recipe_template-v2.tex` for:
+  - Document class, packages, font settings, and page layout
+  - Do NOT attempt to recreate technical specifications from scratch
+  - Use the exact same preamble structure, geometry settings, and font configuration
+
+### 2. LaTeX Formatting (Strict Compliance)
+
+#### Fractions
+- **MUST** use `\usepackage{nicefrac}` in preamble
+- **MUST** use `\nicefrac{numerator}{denominator}` for ALL fractions (e.g., `\nicefrac{1}{2}`, `\nicefrac{1}{4}`, `\nicefrac{1}{3}`, `\nicefrac{3}{4}`)
+- **NEVER** use Unicode fraction characters (½, ¼, etc.)
+
+#### Ingredients Section
+- Two-column format using `multicols` environment (reference template)
+- List ingredients in order of use in directions
+- Format: `Ingredient \dotfill Amount`
+- Capitalize ingredient names
+- Use American units with periods (Tbsp., tsp., oz., lb.)
+- Include metric units in the context of baking or high precision techniques.
+- Use `\nicefrac{numerator}{denominator}` for all fractions
+
+#### Directions Section
+- Begin with prep line: tasks separated by em-dashes (---)
+- Use `enumerate` environment for steps
+- **MUST** format:
+  - `\textbf{ingredients}` - all ingredient names in bold
+  - `\textit{times and temperatures}` - all times and temperatures in italic
+  - `\textit{bowl references}` - e.g., `\textit{Small Bowl~\#1}`
+  - Use non-breaking space (`~`) before units and ingredients
+  - Include `°F` for all temperatures
+
+#### Bowl References
+- Bowl size selection based on actual volume:
+  - Small Bowl: up to ~`\nicefrac{1}{2}`~cup
+  - Medium Bowl: ~`\nicefrac{1}{2}`--2~cups
+  - Large Bowl: multiple cups/pounds
+- In prep line: `combine in \textit{Small Bowl~\#1} (aromatics)`
+- In cooking steps: `\textbf{onion} and \textbf{garlic} (\textit{Small Bowl~\#1})`
+- Include quantities only for measured ingredients (tsp., Tbsp., cups, etc.)
+- Omit quantities for produce, whole cans, and whole items
+- Assign bowls for anything set aside during prep or active cooking
+
+#### Extended Sections (Second Page)
+- Use `\newpage` after main recipe
+- Required sections: Equipment and Hints/Notes
+- Equipment: `\section*{Equipment Required}` with `itemize` environment
+- Hints/Notes: `\section*{Hints and Notes}` with subsections:
+  - `\subsection*{Yield}`
+  - `\subsection*{Mise en Place}`
+  - `\subsection*{Ingredient Tips}`
+  - `\subsection*{Preparation Tips}`
+  - `\subsection*{Make Ahead \& Storage}`
+  - `\subsection*{Serving Suggestions}`
+
+### 3. Information Architecture (from RECIPE-AUTHORING.md)
+
+Every cooking step MUST include:
+
+1. **Action + Doneness (co-located)**: What to do and how to know it's done must appear together
+   - Multi-modal verification: visual, tactile, temperature cues
+   - Format: `[Action] at \textit{temperature} for \textit{time} until [doneness indicator]`
+   - Doneness indicators must be descriptive and natural, not conditional statements
+
+2. **Context for Decision-Making**: Why steps matter and when to deviate
+   - Recovery instructions at decision points
+   - Phrased naturally as continuations, not "if-then" conditionals
+
+3. **Critical Sequence Information**: Dependencies, timing windows, temperature transitions
+   - Make explicit in prep line or immediately before the step
+
+4. **Troubleshooting (proximity principle)**: Common issues and recovery where decisions are made
+   - Use natural language: "Continue baking in \textit{2~minute} increments..." not "If not done, then continue..."
+
+#### Language Requirements
+- Use descriptive present-tense observations ("appears", "feels", "should be")
+- Integrate doneness indicators naturally as descriptive clauses
+- Avoid excessive "if-then" conditionals
+- Recovery instructions as separate sentences, not conditional statements
+- Read like a skilled cook guiding another cook, not technical documentation
+
+### 4. Recipe Validation (from AGENTS.md)
+
+Before finalizing any recipe, validate:
+
+1. **Transformations**: Understand chemical reactions, physical changes, state changes
+2. **Conditions**: Temperature thresholds, time requirements, moisture levels
+3. **Flavor Building**: Balance of salt, sweet, sour, bitter, umami
+4. **Spicing Structure**: Appropriate quantities, timing, balance
+5. **Ratios**: Structural and flavorful soundness
+6. **Failure Modes**: Identify likely problems and prevention
+7. **Realistic Parameters**: Cooking times, temperatures, cookware capacity
+
+Use web search to validate ratios, spice quantities, temperatures, and techniques rather than assuming.
+
+### 5. Post-Creation Sanity Check
+
+**ALWAYS** perform a comprehensive sanity check after creating a recipe. See `AGENTS.md` section "Post-Creation Sanity Check" for complete checklist covering:
+
+- Step structure and logical breaks
+- Redundancy elimination
+- Ratio and amount verification
+- Formatting consistency
+- Flow and readability
+- Cross-section consistency
+- Completeness check
+- Technical accuracy
+
+### 6. Quality Checklist
+
+Before finalizing, verify:
+- [ ] Every cooking step includes doneness indicators (not just time)
+- [ ] Multi-modal verification (visual, tactile, temperature) provided
+- [ ] All fractions use `\nicefrac{numerator}{denominator}`
+- [ ] All ingredients in directions use `\textbf{}`
+- [ ] All times/temperatures in directions use `\textit{}`
+- [ ] All bowl references use `\textit{Small Bowl~\#N}` format
+- [ ] Non-breaking spaces (`~`) used before units and ingredients
+- [ ] All temperatures include `°F`
+- [ ] Prep line uses em-dashes (---) for separation
+- [ ] Extended sections include all required subsections (Yield, Mise en Place, Ingredient Tips, Preparation Tips, Make Ahead & Storage, Serving Suggestions)
+- [ ] Language flows naturally without awkward conditionals
+- [ ] Recovery instructions read as natural continuations
+- [ ] Complete sanity check performed (see AGENTS.md)
+
+## Enforcement
+
+When editing or creating `.tex` recipe files:
+1. **ALWAYS** check against the template for formatting consistency
+2. **ALWAYS** verify fractions use `\nicefrac{}` syntax
+3. **ALWAYS** ensure doneness indicators are co-located with actions
+4. **ALWAYS** validate recipe ratios and techniques using research
+5. **NEVER** deviate from the template's technical specifications without explicit user approval
+
+## Reference Files
+
+- Template: `_templates/recipe_template-v2.tex`
+- Authoring Guide: `docs/RECIPE-AUTHORING.md`
+- Formatting Rules: `AGENTS.md`
