@@ -224,17 +224,6 @@ After creating a recipe document, perform a comprehensive sanity check to ensure
 - **Step independence**: Each step can be understood without excessive forward or backward reference
 - **Parallel operations**: Simultaneous tasks are clearly indicated (e.g., "While X bakes, prepare Y")
 
-### Redundancy Elimination
-
-- **No repeated information**: Information appears once in the most appropriate location:
-  - Critical execution details in directions
-  - Deeper context in extended sections
-  - Avoid duplicating the same information in multiple places
-- **Consolidated instructions**: Similar actions are grouped rather than repeated
-- **Efficient bowl usage**: Ingredients that are added together are combined in the same bowl; no unnecessary separate bowls
-- **Streamlined prep line**: Prep tasks are concise and non-redundant with cooking steps
-- **Extended sections complement, don't repeat**: Hints/Notes provide additional context without restating what's already in directions
-
 ### Ratio and Amount Verification
 
 - **Ingredient proportions**: Verify all ratios against established culinary formulas:
@@ -270,6 +259,8 @@ After creating a recipe document, perform a comprehensive sanity check to ensure
 - **Parallel structure**: When listing multiple cues or ingredients, maintain consistent phrasing
 - **Transition clarity**: Steps flow smoothly with clear connections between actions
 - **No awkward phrasing**: Avoid repetitive "check if" or "verify that" constructions
+- **Conciseness**: Each piece of information stated once, clearly—avoid restating the same concept in different words within a step
+- **No intra-step redundancy**: Don't add separate "The mixture is ready when..." statements that repeat what's already integrated into the action
 
 ### Cross-Section Consistency
 

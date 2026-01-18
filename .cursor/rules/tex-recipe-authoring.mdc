@@ -96,6 +96,9 @@ Every cooking step MUST include:
 - Avoid excessive "if-then" conditionals
 - Recovery instructions as separate sentences, not conditional statements
 - Read like a skilled cook guiding another cook, not technical documentation
+- **Conciseness**: Each piece of information stated once, clearly—avoid restating the same concept in different words within a step
+- **No intra-step redundancy**: Don't add separate "The mixture is ready when..." statements that repeat what's already integrated into the action
+- **Multi-modal cues should complement**: Visual, tactile, and temperature cues should provide different information, not restate the same observation
 
 ### 4. Recipe Validation (from AGENTS.md)
 
@@ -139,6 +142,8 @@ Before finalizing, verify:
 - [ ] Extended sections include all required subsections (Yield, Mise en Place, Ingredient Tips, Preparation Tips, Make Ahead & Storage, Serving Suggestions)
 - [ ] Language flows naturally without awkward conditionals
 - [ ] Recovery instructions read as natural continuations
+- [ ] No intra-step redundancy: each piece of information stated once, clearly
+- [ ] Multi-modal cues provide complementary information, not restatements
 - [ ] Complete sanity check performed (see AGENTS.md)
 
 ## Enforcement

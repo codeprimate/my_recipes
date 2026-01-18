@@ -149,14 +149,46 @@ Organize information by frequency of reference and criticality:
 - Technical jargon that interrupts flow
 - Repetitive "check if" or "verify that" phrases
 - Awkward conditional recovery instructions
+- **Intra-step redundancy**: Restating the same information multiple ways within a single step (e.g., "it appears smooth" followed by "it should look uniform")
+- **Over-verbose descriptions**: Saying the same thing in different words (e.g., "dough should hold together when pressed" and "dough should not crumble when squeezed")
 
 **Language Patterns to Use**:
 - Descriptive present-tense observations ("appears", "feels", "should be")
 - Natural transitions between action and verification
 - Concise recovery instructions as separate sentences
 - Flowing narrative that guides the cook through the process
+- **Single, clear statement**: Each piece of information stated once, clearly and concisely
+- **Complementary, not redundant cues**: Multi-modal verification should provide different information (visual + tactile + temperature), not restate the same observation
 
-### 2. Locality of Reference
+### 2. Conciseness and Intra-Step Redundancy
+
+**Principle**: Each piece of information should appear once, clearly and concisely. Avoid restating the same concept in different words within a single step.
+
+**Key Guidelines**:
+
+- **State once, clearly**: Don't say the same thing multiple ways
+  - **Redundant**: "Beat until smooth and slightly fluffy with no visible sugar granules. The mixture is ready when it appears smooth and slightly fluffy, with no visible sugar granules remaining."
+  - **Concise**: "Beat until smooth and slightly fluffy with no visible sugar granules, about \textit{2--3~minutes}."
+
+- **Multi-modal cues should complement, not repeat**: Each verification method should provide distinct information
+  - **Good**: "Cookies are done when edges turn pale golden and feel firm, while centers appear slightly underdone but will set upon cooling." (visual + tactile + behavioral)
+  - **Redundant**: "Cookies are done when edges turn pale golden. The edges should appear golden. The edges will look golden when done."
+
+- **Integrate doneness into the action, don't restate it separately**
+  - **Redundant**: "Mix until dough comes together. Dough is ready when it appears crumbly but holds together when pressed."
+  - **Concise**: "Mix until dough appears crumbly but holds together when pressed, about \textit{45~seconds--1~minute}."
+
+- **Avoid redundant qualifiers**: Don't add unnecessary explanatory phrases that repeat what's already stated
+  - **Redundant**: "dough should hold together without crumbling when pressed, and should feel slightly tacky but not sticky"
+  - **Concise**: "dough should feel slightly tacky but not sticky" (the "holds together" is implied by "cohesive mass")
+
+**When Adding Doneness Indicators**:
+- Integrate them directly into the action statement
+- Use the most direct, clear phrasing
+- If you find yourself restating the same concept, choose the clearest version and remove the rest
+- Multi-modal verification should add new information, not restate existing observations
+
+### 3. Locality of Reference
 
 **Principle**: Information needed at step N should be at step N, not scattered across the document.
 
@@ -167,7 +199,7 @@ Organize information by frequency of reference and criticality:
 
 **Exception**: Extended sections for deeper context that doesn't affect immediate execution.
 
-### 3. Progressive Disclosure
+### 4. Progressive Disclosure
 
 **Principle**: Essential information in directions; nice-to-know in extended sections.
 
@@ -183,7 +215,7 @@ Organize information by frequency of reference and criticality:
 - Advanced variations
 - Historical/cultural context
 
-### 4. Fail-Safe Design
+### 5. Fail-Safe Design
 
 **Principle**: Include recovery instructions at decision points, especially for unforgiving techniques.
 
@@ -199,7 +231,7 @@ Organize information by frequency of reference and criticality:
 [Action] → [Parameters] → [Doneness] → [Warning if Unforgiving] → [Recovery Instructions]
 ```
 
-### 5. Multi-Modal Verification
+### 6. Multi-Modal Verification
 
 **Principle**: Provide multiple ways to verify doneness, not just time.
 
@@ -214,7 +246,7 @@ Organize information by frequency of reference and criticality:
 
 **Why this works**: The doneness indicators are integrated as descriptive clauses that flow naturally from the action. Multiple verification methods are presented as alternatives ("or when...") rather than as separate conditional checks.
 
-### 6. Contextual Warnings
+### 7. Contextual Warnings
 
 **Principle**: Flag unforgiving steps where they occur, not just in extended sections.
 
@@ -333,6 +365,9 @@ Before finalizing a recipe, verify:
 - [ ] Doneness indicators are integrated as descriptive clauses, not separate checks
 - [ ] Recovery instructions read as natural continuations, not conditional statements
 - [ ] Instructions read like a skilled cook guiding another cook, not technical documentation
+- [ ] No intra-step redundancy: each piece of information stated once, clearly
+- [ ] Multi-modal cues provide complementary information, not restatements
+- [ ] Conciseness: no unnecessary repetition of the same concept in different words
 
 ## Examples
 
