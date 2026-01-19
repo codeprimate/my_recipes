@@ -59,6 +59,14 @@ When working with LaTeX recipe files (`.tex`), you MUST strictly follow the auth
 - Omit quantities for produce, whole cans, and whole items
 - Assign bowls for anything set aside during prep or active cooking
 
+#### Quote Description (Required)
+- Place after `\maketitle` and `\thispagestyle{empty}`, before `\section*{Ingredients}`
+- Format: `\begin{quote}\textit{...}\end{quote}` (content should be italicized)
+- Content: High-level overview describing major components and how they're prepared/assembled
+- Keep concise (2-3 sentences)
+- Focus on preparation methods and key components
+- Example: `\begin{quote}\textit{Pressure-cooked chicken thighs are diced and combined with al-dente rice, blanched broccoli, and sautéed vegetables. A spiced roux-based cream sauce binds everything together, and the casserole is baked until bubbly and topped with crispy fried onions for texture.}\end{quote}`
+
 #### Extended Sections (Second Page)
 - Use `\newpage` after main recipe
 - Required sections: Equipment and Hints/Notes
@@ -130,6 +138,7 @@ Use web search to validate ratios, spice quantities, temperatures, and technique
 ### 6. Quality Checklist
 
 Before finalizing, verify:
+- [ ] Quote description provides high-level overview of components and preparation method
 - [ ] Every cooking step includes doneness indicators (not just time)
 - [ ] Multi-modal verification (visual, tactile, temperature) provided
 - [ ] All fractions use `\nicefrac{numerator}{denominator}`
@@ -139,6 +148,7 @@ Before finalizing, verify:
 - [ ] Non-breaking spaces (`~`) used before units and ingredients
 - [ ] All temperatures include `°F`
 - [ ] Prep line uses em-dashes (---) for separation
+- [ ] Quote description included after title with high-level overview
 - [ ] Extended sections include all required subsections (Yield, Mise en Place, Ingredient Tips, Preparation Tips, Make Ahead & Storage, Serving Suggestions)
 - [ ] Language flows naturally without awkward conditionals
 - [ ] Recovery instructions read as natural continuations

@@ -110,8 +110,15 @@ Hints and Notes:
 - Make Ahead & Storage: timing windows, storage conditions, reheating instructions
 - Serving Suggestions: pairings, garnishes, presentation ideas
 
+#### Quote Description (Required)
+- Place after `\maketitle` and `\thispagestyle{empty}`, before `\section*{Ingredients}`
+- Format: `\begin{quote}\textit{...}\end{quote}` (content should be italicized)
+- Content: Describe at a high level what components are being prepared and how they come together
+- Purpose: Give readers a quick understanding of the recipe's structure and preparation approach before diving into details
+- Example: `\begin{quote}\textit{Pressure-cooked chicken thighs are diced and combined with al-dente rice, blanched broccoli, and sautéed vegetables (caramelized corn, onion, garlic, and mushrooms). A spiced roux-based cream sauce binds everything together, and the casserole is baked until bubbly and topped with crispy fried onions for texture.}\end{quote}`
+- Keep it concise (2-3 sentences) and focus on major components and preparation methods
+
 ### Optional Elements
-- Description: Use quote environment after title if needed
 - Multiple sections: Use separate sections for complex recipes (see green chile template)
 
 ### Layout
@@ -273,7 +280,8 @@ After creating a recipe document, perform a comprehensive sanity check to ensure
 
 ### Completeness Check
 
-- **All required sections present**: Title, ingredients, directions, equipment, hints/notes with all subsections (Yield, Mise en Place, Ingredient Tips, Preparation Tips, Make Ahead & Storage, Serving Suggestions)
+- **All required sections present**: Title, quote description, ingredients, directions, equipment, hints/notes with all subsections (Yield, Mise en Place, Ingredient Tips, Preparation Tips, Make Ahead & Storage, Serving Suggestions)
+- **Quote description**: Provides concise high-level overview of major components and preparation approach
 - **Doneness indicators**: Every cooking step includes multi-modal verification (visual, tactile, temperature when relevant)
 - **Critical information**: All essential execution details are in directions, not buried in extended sections
 - **Recovery instructions**: Unforgiving techniques have troubleshooting guidance at decision points

@@ -90,9 +90,14 @@ Step N: [Action] → [Parameters] → [Doneness Indicator] → [What to Watch Fo
 
 Structure supports comprehension by providing context before details:
 
-1. **Prep Line**: Sets stage with prerequisites (preheat, line pan, bring ingredients to temperature)
-2. **Steps**: Action → Parameters → Verification
-3. **Extended Sections**: Deeper context, tips, troubleshooting, substitutions
+1. **Quote Description** (required): High-level overview of components and preparation method
+   - Provides a quick mental model of what the recipe does before diving into details
+   - Describes major components and how they come together
+   - Keep concise (2-3 sentences), focusing on preparation methods and key components
+   - Example: "Pressure-cooked chicken thighs are diced and combined with al-dente rice, blanched broccoli, and sautéed vegetables (caramelized corn, onion, garlic, and mushrooms). A spiced roux-based cream sauce binds everything together, and the casserole is baked until bubbly and topped with crispy fried onions for texture."
+2. **Prep Line**: Sets stage with prerequisites (preheat, line pan, bring ingredients to temperature)
+3. **Steps**: Action → Parameters → Verification
+4. **Extended Sections**: Deeper context, tips, troubleshooting, substitutions
 
 ### Information Hierarchy
 
@@ -351,6 +356,7 @@ While crust bakes, whisk together \nicefrac{2}{3}~cup \textbf{granulated sugar} 
 
 Before finalizing a recipe, verify:
 
+- [ ] Quote description provides high-level overview of components and preparation method
 - [ ] Every cooking step includes doneness indicators (not just time)
 - [ ] Critical timing/sequence information is explicit
 - [ ] Unforgiving techniques have in-step warnings
