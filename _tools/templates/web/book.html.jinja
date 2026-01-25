@@ -507,11 +507,19 @@
         @media screen and (max-width: 768px) {
             body {
                 padding: 1em;
-                font-size: 16px;
+                font-size: 18px;
             }
 
             .ingredients-columns {
                 grid-template-columns: 1fr;
+                grid-auto-flow: row;
+                padding: 0 1em;
+            }
+
+            .directions li,
+            .recipe ol li,
+            .recipe ul li {
+                line-height: 1.8;
             }
 
             .toc > ul > li {
@@ -524,6 +532,22 @@
 
             h2 {
                 font-size: 1.5em;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            body {
+                font-size: 19px;
+            }
+
+            .ingredients-columns {
+                padding: 0 1.25em;
+            }
+
+            .directions li,
+            .recipe ol li,
+            .recipe ul li {
+                line-height: 1.9;
             }
         }
     </style>
@@ -681,19 +705,24 @@
 
         // Set up columnar flow for ingredient grids
         function setupColumnarIngredients() {
+            const isMobile = window.innerWidth <= 768;
             document.querySelectorAll('.ingredients-columns').forEach(grid => {
                 const items = grid.querySelectorAll('.ingredient-item');
                 const itemCount = items.length;
-                if (itemCount > 0) {
-                    // Calculate number of rows needed (half rounded up)
+                if (itemCount > 0 && !isMobile) {
+                    // Calculate number of rows needed (half rounded up) - only for desktop
                     const rows = Math.ceil(itemCount / 2);
                     grid.style.gridTemplateRows = `repeat(${rows}, min-content)`;
+                } else if (isMobile) {
+                    // Clear any grid-template-rows on mobile to let CSS handle it
+                    grid.style.gridTemplateRows = '';
                 }
             });
         }
 
-        // Run on page load
+        // Run on page load and window resize
         setupColumnarIngredients();
+        window.addEventListener('resize', setupColumnarIngredients);
     </script>
 </body>
 </html>
