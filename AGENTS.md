@@ -60,6 +60,10 @@ Explicit requirements for recipe formatting:
 - Use \usepackage{nicefrac} and \nicefrac{numerator}{denominator} for all fractions (e.g., \nicefrac{1}{2}, \nicefrac{1}{4}, \nicefrac{1}{3}, \nicefrac{3}{4})—do not use Unicode fraction characters as they are not always supported
 - Within the directions, times and temperatures should be in italic, and ingredients should be in bold
 - Within the directions, use a non-breaking space for times and ingredients
+- Include page break penalties in preamble to prevent breaks within list items:
+  - \widowpenalty=10000
+  - \clubpenalty=10000
+  - \interlinepenalty=500
 
 ### DETAILED FORMATTING GUIDE
 
@@ -85,7 +89,7 @@ Explicit requirements for recipe formatting:
 - **Combining when added together (common sense)**: When **multiple ingredients are added in the same step**, combine them in **one bowl**—do not use a separate bowl for each. Single ingredients may have their own bowl or be set aside without one. Use a bowl when something must be held (reserved liquid, cooked item set aside, component added back later).
 - Bowl size selection must be based on the actual volume of the raw or prepared ingredient(s)
   - Small Bowl: typically for volumes up to 1~cup (spices, small aromatics, small amounts of prepared ingredients)
-  - Medium Bowl: typically for volumes 2--4~cups (moderate amounts of ingredients, combined mixtures, cooked proteins in smaller quantities)
+  - Medium Bowl: typically for volumes 2--6~cups (moderate amounts of ingredients, combined mixtures, cooked proteins in smaller quantities)
   - Large Bowl: reserved for truly large volumes, pounds of ingredients, or substantial quantities that require significant capacity or mixing
 - In prep line: when multiple ingredients are added together in one step, combine them in one bowl; single ingredients may have a bowl or "measure and set aside" / "have ready"
   - Format for bowls: `combine in \textit{Small Bowl~\#1} (aromatics)`
@@ -157,10 +161,10 @@ Hints and Notes:
 #### Quote Description (Required)
 - Place after `\maketitle` and `\thispagestyle{empty}`, before `\section*{Ingredients}`
 - Format: `\begin{quote}\textit{...}\end{quote}` (content should be italicized)
-- Content: Describe at a high level what components are being prepared and how they come together
+- Content: Describe at a high level what components are being prepared and how they come together, ending with the yield
 - Purpose: Give readers a quick understanding of the recipe's structure and preparation approach before diving into details
-- Example: `\begin{quote}\textit{Pressure-cooked chicken thighs are diced and combined with al-dente rice, blanched broccoli, and sautéed vegetables (caramelized corn, onion, garlic, and mushrooms). A spiced roux-based cream sauce binds everything together, and the casserole is baked until bubbly and topped with crispy fried onions for texture.}\end{quote}`
-- Keep it concise (2-3 sentences) and focus on major components and preparation methods
+- Example: `\begin{quote}\textit{Pressure-cooked chicken thighs are diced and combined with al-dente rice, blanched broccoli, and sautéed vegetables (caramelized corn, onion, garlic, and mushrooms). A spiced roux-based cream sauce binds everything together, and the casserole is baked until bubbly and topped with crispy fried onions for texture. Serves 6--8.}\end{quote}`
+- Keep it concise (2-3 sentences) and focus on major components, preparation methods, and yield
 
 ### Optional Elements
 - Multiple sections: Use separate sections for complex recipes (see green chile template)
