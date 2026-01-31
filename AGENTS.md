@@ -32,7 +32,7 @@ Follow this flow for every recipe—**new** or **modification**. Each step must 
    Apply **Recipe Validation** (Thinking Framework, Research Protocol, Culinary Integrity) when creating from scratch or when the change affects ingredients, ratios, technique, or structure. For formatting-only or minor text edits, validation may be brief. Resolve any gaps or doubts before writing.
 
 3. **Draft or edit the document**  
-   - **New:** Create the LaTeX recipe using **LaTeX Recipe Formatting Requirements** (and Detailed Formatting Guide) for structure, syntax, and layout, and **Information Architecture and Presentation** (and `docs/RECIPE-AUTHORING.md`) for directions: action + doneness, context, sequence, troubleshooting, bowl-combining rule.  
+   - **New:** Create the LaTeX recipe using **LaTeX Recipe Formatting Requirements** (`_templates/recipe-formatting-requirements.md`) for structure, syntax, and layout, and **Information Architecture and Presentation** (and `docs/RECIPE-AUTHORING.md`) for directions: action + doneness, context, sequence, troubleshooting, bowl-combining rule.  
    - **Modification:** Apply the agreed changes using the same requirements. Preserve existing content that is not being changed; ensure edits do not break structure, cross-references, or consistency (ingredients ↔ directions, bowl refs, equipment, Mise en Place).
 
 4. **Save the recipe**  
@@ -49,131 +49,11 @@ Follow this flow for every recipe—**new** or **modification**. Each step must 
 
 ## LaTeX Recipe Formatting Requirements
 
-IMPORTANT: Reference provided templates for document class, packages, font settings, and page layout details. Do not attempt to recreate these technical specifications from scratch.
+**Formatting rules are defined in a dedicated file for agent use.** When drafting or editing recipes, and when running the Formatting Consistency and related checks in the Post-Creation Sanity Check, use:
 
-Explicit requirements for recipe formatting:
-- Reference sample recipes for idiomatic formatting and structure
-- List ingredients in order of use in the directions
-- American units only
-- Use \usepackage{nicefrac} and \nicefrac{numerator}{denominator} for all fractions (e.g., \nicefrac{1}{2}, \nicefrac{1}{4}, \nicefrac{1}{3}, \nicefrac{3}{4})—do not use Unicode fraction characters as they are not always supported
-- Within the directions, times and temperatures should be in italic, and ingredients should be in bold
-- Within the directions, use a non-breaking space for times and ingredients
-- Include page break penalties in preamble to prevent breaks within list items:
-  - \widowpenalty=10000
-  - \clubpenalty=10000
-  - \interlinepenalty=500
+**[\_templates/recipe-formatting-requirements.md](_templates/recipe-formatting-requirements.md)** — single source of truth for structure, syntax, layout, ingredients, directions, bowl references, quote description, extended sections (Equipment, Hints/Notes), and layout. The sanity check verifies compliance with that document.
 
-### DETAILED FORMATTING GUIDE
-
-#### Ingredients Section
-- Two-column format with dotted lines (reference template multicols setup)
-- List ingredients in order of use
-- Format: Ingredient \dotfill Amount
-- Capitalize ingredient names
-- Use American units with periods (Tbsp., tsp., oz., lb.)
-- Use \nicefrac{numerator}{denominator} for all fractions (e.g., \nicefrac{1}{2}, \nicefrac{1}{4}, \nicefrac{1}{3}, \nicefrac{3}{4})
-
-#### Directions Section
-- Begin with prep line: tasks separated by em-dashes
-- Use enumerate environment for steps
-- Format requirements:
-  - \textbf{ingredients}
-  - \textit{times and temperatures}
-  - \textit{bowl references} (e.g., \textit{Small Bowl~\#1})
-  - Use non-breaking space (~) before units and ingredients
-  - Include °F for all temperatures
-
-#### Bowl References in Directions
-- **Combining when added together (common sense)**: When **multiple ingredients are added in the same step**, combine them in **one bowl**—do not use a separate bowl for each. Single ingredients may have their own bowl or be set aside without one. Use a bowl when something must be held (reserved liquid, cooked item set aside, component added back later).
-- Bowl size selection must be based on the actual volume of the raw or prepared ingredient(s)
-  - Small Bowl: typically for volumes up to 1~cup (spices, small aromatics, small amounts of prepared ingredients)
-  - Medium Bowl: typically for volumes 2--6~cups (moderate amounts of ingredients, combined mixtures, cooked proteins in smaller quantities)
-  - Large Bowl: reserved for truly large volumes, pounds of ingredients, or substantial quantities that require significant capacity or mixing
-- In prep line: when multiple ingredients are added together in one step, combine them in one bowl; single ingredients may have a bowl or "measure and set aside" / "have ready"
-  - Format for bowls: `combine in \textit{Small Bowl~\#1} (aromatics)`
-- In cooking steps: list ingredients first, then bowl reference in parentheses (when a bowl is used)
-  - Format: `\textbf{onion} and \textbf{garlic} (\textit{Small Bowl~\#1})`
-- Quantity rules for bowl references in cooking steps:
-  - Include quantities only for measured ingredients (tsp., Tbsp., cups, etc.)
-  - Omit quantities for produce, whole cans, and whole items
-  - Example: `2~tsp. \textbf{cumin} with 1~tsp. \textbf{oregano} (\textit{Small Bowl~\#2})`
-  - Example: `\textbf{kale} and \textbf{cannellini beans} (\textit{Large Bowl~\#1})`
-- When a bowl **is** required (combined add-at-once or must be held):
-  - Reserved liquids, cooked ingredients set aside, or components added back later get a bowl
-  - Example: `reserve \textbf{pasta water} in \textit{Medium Bowl~\#1}`
-  - Example: `transfer cooked \textbf{chicken} to \textit{Large Bowl~\#2} and set aside`
-
-#### Extended Sections (Second Page)
-- Use \newpage to start new page after main recipe
-- Required sections: Equipment and Hints/Notes
-
-##### Equipment Section
-- Use \section*{Equipment Required}
-- List all necessary tools using itemize environment
-- Include sizes for bowls, pans, and dishes
-- List optional but helpful tools
-- Order by use in recipe when possible
-
-##### Hints and Notes Section
-- Use \section*{Hints and Notes}
-- Include the following subsections using \subsection*:
-  - Yield
-  - Mise en Place
-  - Ingredient Tips
-  - Preparation Tips
-  - Make Ahead & Storage
-  - Serving Suggestions
-- Use itemize environment within subsections
-- Format requirements:
-  - \textbf{ingredients} when referenced
-  - \textit{times and temperatures}
-  - Include °F for all temperatures
-  - Use non-breaking space (~) before units and ingredients
-
-#### Content Guidelines for Extended Sections:
-
-Equipment:
-- List all essential equipment needed
-- Specify sizes for containers
-- Include measuring tools and common implements
-- Note optional but helpful tools
-- Be specific about tool types
-
-Hints and Notes:
-- Yield: number of servings, portions, or quantity produced (e.g., "Serves 4-6" or "Makes 12 stuffed mushroom caps")
-- Mise en Place:
-  - When multiple ingredients are added in the same step, combine them in **one bowl** (do not use a separate bowl for each). Single ingredients may have a bowl or be listed as "have ready" / "measure and set aside." Use a bowl when something must be held (reserved liquid, cooked item set aside).
-  - Combine everything that is added together in the same step into one bowl
-  - Enumerate prep bowls by size (small, medium, large) and number (e.g., "Small Bowl #1," "Medium Bowl #2")
-  - Select bowl sizes based on actual volume of raw or prepared ingredients (small: up to ~\nicefrac{1}{2}~cup, medium: ~\nicefrac{1}{2}--2~cups, large: multiple cups/pounds)
-  - Annotate each bowl with its cooking stage (e.g., "Medium Bowl #1 — aromatics," "Medium Bowl #2 — spice blend")
-  - Include approximate volumes in annotations when helpful (e.g., "Medium Bowl #2 — breadcrumbs (about 1\nicefrac{1}{2}~cups)")
-  - For reserved liquids, cooked ingredients set aside, or components added back later: assign a bowl and list in Mise en Place
-  - Note timing for ingredients that need to come to room temperature
-  - Specify a logical prep sequence to complete before applying heat
-- Ingredient Tips: preferred types, substitutions, quality notes
-- Preparation Tips: technique guidance, common pitfalls to avoid
-- Make Ahead & Storage: timing windows, storage conditions, reheating instructions
-- Serving Suggestions: pairings, garnishes, presentation ideas
-
-#### Quote Description (Required)
-- Place after `\maketitle` and `\thispagestyle{empty}`, before `\section*{Ingredients}`
-- Format: `\begin{quote}\textit{...}\end{quote}` (content should be italicized)
-- Content: Describe at a high level what components are being prepared and how they come together, ending with the yield
-- Purpose: Give readers a quick understanding of the recipe's structure and preparation approach before diving into details
-- Example: `\begin{quote}\textit{Pressure-cooked chicken thighs are diced and combined with al-dente rice, blanched broccoli, and sautéed vegetables (caramelized corn, onion, garlic, and mushrooms). A spiced roux-based cream sauce binds everything together, and the casserole is baked until bubbly and topped with crispy fried onions for texture. Serves 6--8.}\end{quote}`
-- Keep it concise (2-3 sentences) and focus on major components, preparation methods, and yield
-
-### Optional Elements
-- Multiple sections: Use separate sections for complex recipes (see green chile template)
-
-### Layout
-- Title using \maketitle
-- Empty author/date
-- First page: \thispagestyle{empty}
-- Reference templates for margin and font settings
-
-Note: This document assumes familiarity with LaTeX. Reference provided templates for complete implementation details including package requirements, margin settings, and font configurations. Always include \usepackage{nicefrac} in the document preamble when creating new recipes.
+Reference the templates in `_templates/` (`.tex` files) for document class, packages, and page layout implementation; reference sample recipes in the category folders for idiomatic usage.
 
 ## Information Architecture and Presentation
 
@@ -265,7 +145,22 @@ Beyond science and ratios, validate that the recipe honors good cooking practice
 
 *(Protocol step 5: run this only after the recipe is saved.)*
 
-**Save the recipe document first**, then perform a comprehensive sanity check to ensure quality, consistency, and usability. Review the entire saved document systematically:
+**Save the recipe document first**, then perform a comprehensive sanity check to ensure quality, consistency, and usability. Review the entire saved document systematically. The checks below verify compliance with **LaTeX Recipe Formatting Requirements** (`_templates/recipe-formatting-requirements.md`) and with content/structure expectations; formatting details are defined there and are confirmed here.
+
+**Protocol flow (perform in order):**
+
+1. **Step structure and logical breaks** — § Step Structure and Logical Breaks  
+2. **Ratio and amount verification** — § Ratio and Amount Verification  
+3. **Formatting consistency** — § Formatting Consistency  
+4. **Flow and readability** — § Flow and Readability  
+5. **Cross-section consistency** — § Cross-Section Consistency  
+6. **Completeness** — § Completeness Check  
+7. **Technical accuracy** — § Technical Accuracy  
+8. **Final review** — § Final Review Questions  
+
+Fix any issues found; if changes were made, save and re-run from step 1 until the check passes.
+
+---
 
 ### Step Structure and Logical Breaks
 
@@ -289,23 +184,19 @@ Beyond science and ratios, validate that the recipe honors good cooking practice
 - **Total quantities make sense**: Sum of ingredients aligns with stated yield/servings
 - **Unit consistency**: All measurements use consistent units (no mixing metric and imperial without clear reason)
 - **Fraction accuracy**: All fractions are correct and simplified where appropriate
-- **Combining in one bowl**: Ingredients added together in the same step are combined in one bowl (not one bowl per ingredient). Single ingredients may have a bowl or not; things that must be held (reserved liquid, cooked item set aside) get a bowl.
-- **Bowl size appropriateness**: Bowl assignments match actual ingredient volumes
+- **Bowl usage (per Bowl References in `_templates/recipe-formatting-requirements.md`):** Ingredients added together in the same step are combined in one bowl (not one bowl per ingredient). Single ingredients may have a bowl or not; reserved liquids and items set aside get a bowl. Bowl assignments match actual ingredient volumes (small/medium/large as defined there).
 - **Cookware capacity**: Total volume fits in stated cookware with room for expansion/reduction
 
 ### Formatting Consistency
 
-- **LaTeX syntax**: All formatting commands are correct:
-  - `\textbf{}` for all ingredients in directions
-  - `\textit{}` for all times, temperatures, and bowl references
-  - `\nicefrac{numerator}{denominator}` for all fractions (no Unicode fractions)
-  - Non-breaking spaces (`~`) before units and ingredients
-  - `°F` included for all temperatures
-- **Capitalization**: Ingredient names are consistently capitalized in ingredients list
-- **Punctuation**: Consistent use of periods in units (Tbsp., tsp., oz., lb.)
-- **Bowl reference format**: All bowl references use consistent format: `\textit{Small Bowl~\#N}`
-- **Prep line format**: Tasks separated by em-dashes (---)
-- **Section structure**: All required sections present and properly formatted
+Verify the document conforms to **LaTeX Recipe Formatting Requirements** (`_templates/recipe-formatting-requirements.md`). In particular:
+
+- **Directions and Hints/Notes:** `\textbf{ingredients}`; `\textit{times, temperatures, bowl references}`; non-breaking space (`~`) before units and ingredients; °F for all temperatures
+- **Fractions:** `\nicefrac{numerator}{denominator}` everywhere; no Unicode fractions
+- **Ingredients list:** Capitalized ingredient names; American units with periods (Tbsp., tsp., oz., lb.)
+- **Bowl references:** Consistent format `\textit{Small Bowl~\#N}` (or Medium/Large as appropriate)
+- **Prep line:** Tasks separated by em-dashes (---)
+- **Section structure:** All required sections present and properly formatted (Ingredients, Directions, Equipment, Hints/Notes with required subsections; quote description in place)
 
 ### Flow and Readability
 
@@ -329,7 +220,7 @@ Beyond science and ratios, validate that the recipe honors good cooking practice
 
 ### Completeness Check
 
-- **All required sections present**: Title, quote description, ingredients, directions, equipment, hints/notes with all subsections (Yield, Mise en Place, Ingredient Tips, Preparation Tips, Make Ahead & Storage, Serving Suggestions)
+- **All required sections present (per `_templates/recipe-formatting-requirements.md`):** Title, quote description, ingredients, directions, equipment, hints/notes with all subsections (Yield, Mise en Place, Ingredient Tips, Preparation Tips, Make Ahead & Storage, Serving Suggestions)
 - **Quote description**: Provides concise high-level overview of major components and preparation approach
 - **Doneness indicators**: Every cooking step includes multi-modal verification (visual, tactile, temperature when relevant)
 - **Critical information**: All essential execution details are in directions, not buried in extended sections
@@ -356,7 +247,7 @@ Before finalizing, ask:
 5. **Are the ratios believable?** Do ingredient amounts make sense for the stated yield?
 6. **Is the flow logical?** Do steps progress naturally without jarring transitions?
 7. **Is redundancy minimized?** Is each piece of information stated once in the best location?
-8. **Combining when added together?** For each step that adds multiple ingredients, are they combined in one bowl (not a separate bowl for each)?
+8. **Bowl-combining (per Bowl References):** For each step that adds multiple ingredients, are they combined in one bowl (not a separate bowl for each)?
 
 ## Tools (Build & Compile)
 
