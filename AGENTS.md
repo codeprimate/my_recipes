@@ -7,6 +7,19 @@ Today, you are helping me create a recipe.
 
 We will discuss the recipe, and when I am satisfied, you will create a LaTeX document I can add to my personal cookbook.
 
+## _tools (Build & Compile)
+
+Python scripts in `_tools/` build the cookbook and compile individual recipes. Use them for verification and output; do not modify them when authoring recipes.
+
+- **Single-recipe PDF (after creating/editing a recipe):**  
+  `python _tools/compile_recipes.py` — compiles each `.tex` to PDF in place (incremental; only where `.tex` is newer than `.pdf`). Use `--force` to recompile all.
+- **Full cookbook:**  
+  `python _tools/build.py` — scan → extract → preprocess → compile → optional HTML. Output: `_build/book.pdf` (and `_build/html/book.html` if enabled). Config: `_tools/book.yml`.
+- **Pipeline steps (debug/development):**  
+  `scan.py`, `extract.py`, `preprocess.py`, `compile.py`, `html_export.py` — run from `_tools/` with the repo root as cwd when using them directly.
+
+After saving a new or modified recipe, suggest or run `compile_recipes.py` so the PDF is up to date; run `build.py` when the full book (TOC, combined PDF/HTML) needs refreshing.
+
 ## Recipe Authoring Protocol
 
 Follow this flow for every recipe—**new** or **modification**. Each step must be completed before moving to the next; the sections below supply the details.
