@@ -96,7 +96,7 @@ Structure supports comprehension by providing context before details:
    - Keep concise (2-3 sentences), focusing on preparation methods and key components
    - Example: "Pressure-cooked chicken thighs are diced and combined with al-dente rice, blanched broccoli, and sautéed vegetables (caramelized corn, onion, garlic, and mushrooms). A spiced roux-based cream sauce binds everything together, and the casserole is baked until bubbly and topped with crispy fried onions for texture."
 2. **Prep Line**: Sets stage with prerequisites (preheat, line pan, bring ingredients to temperature)
-3. **Steps**: Action → Parameters → Verification
+3. **Steps**: Action → Parameters → Verification. When one logical step has several sequential sub-actions (e.g. mixing a dough in order: cream, add eggs, add dry), use **one numbered step with lettered substeps** (nested `enumerate`); see formatting requirements § Steps and substeps.
 4. **Extended Sections**: Deeper context, tips, troubleshooting, substitutions
 
 ### Information Hierarchy

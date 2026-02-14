@@ -136,7 +136,7 @@ Goal: know what to ask and where to find authoritative answers.
 ### 1. Step structure and logical breaks
 
 - Logical progression; no steps out of order or disconnected.
-- Granularity: not too fine (one action split across steps) or too coarse (unrelated actions in one step).
+- Granularity: not too fine (one action split across steps) or too coarse (unrelated actions in one step). For a single logical step that has several sequential sub-actions (e.g. mixing a dough: cream, add eggs, add dry), use **one numbered step with lettered substeps** (nested `enumerate`); see `recipe-formatting-requirements.md` § Steps and substeps.
 - Break at: change of cooking method, heat/temperature, major component (e.g. crust → filling → topping), or natural pause.
 - Each step understandable without heavy forward/backward reference.
 - Parallel work clearly indicated (e.g. “While X bakes, prepare Y”).

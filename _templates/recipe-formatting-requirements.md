@@ -33,6 +33,22 @@
   - Non-breaking space (`~`) before units and before ingredients where appropriate
   - Include °F for all temperatures
 
+### Steps and substeps
+
+- **When to use:** Use a **single numbered step with lettered substeps** when one logical step contains several sequential sub-actions that belong together (e.g. mixing a dough: cream fat and sugar, add eggs, add dry ingredients). This keeps the main list from becoming too long or too fine while preserving a clear sequence.
+- **How to format:** One top-level `\item` with a short intro phrase, then a nested `\begin{enumerate}...\end{enumerate}` whose items render as (a), (b), (c), (d). No extra packages required.
+- **Example:**
+```latex
+\item Mix the dough in a large bowl:
+\begin{enumerate}
+    \item Stir \textbf{peanut~butter} and \textbf{sugar} until smooth, about \textit{3--5~minutes}. Scrape bowl as needed.
+    \item Add \textbf{eggs} one at a time, mixing well after each until fully incorporated.
+    \item Add \textbf{vanilla} and mix until combined.
+    \item Add \textbf{baking~soda} and \textbf{salt} and stir until just combined; dough should be smooth and uniform.
+\end{enumerate}
+```
+- **Granularity:** Use substeps for a tight sequence within one step; use separate numbered steps for a change of method, heat, vessel, or major component (e.g. crust → filling → bake).
+
 ## Bowl References in Directions
 
 - **Combining when added together:** When **multiple ingredients are added in the same step**, combine them in **one bowl**—do not use a separate bowl for each. Single ingredients may have their own bowl or be set aside without one. Use a bowl when something must be held (reserved liquid, cooked item set aside, component added back later).
