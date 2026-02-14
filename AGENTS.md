@@ -90,6 +90,7 @@ For each recipe, reason through:
 5. **Ratios:** Structural (flour–liquid, fat–flour, leavening–flour, hydration)—research formulas; sauce/braising (liquid to solids, reduction); seasoning (salt to protein, salt to liquid); flavor (acid–fat, sugar–acid); yield realistic for ingredient quantities.
 6. **Failure modes:** Likely failures for this dish type; sequencing, temperature, timing; ratio issues that undermine structure or flavor; unforgiving technique (emulsions, custards, bread, candy).
 7. **Realistic parameters:** Cooking times vs heat transfer for portion size and cookware; temperatures vs intended reactions; cookware capacity for volume plus expansion/reduction.
+8. **Texture:** Where texture defines the dish (crisp, creamy, tender, crunch), design for it; sequence and method should achieve or preserve intended contrasts.
 
 ### Research Protocol
 
@@ -113,6 +114,8 @@ Goal: know what to ask and where to find authoritative answers.
 - Technique sequence correct for intended results.
 - Aromatics and spices appropriate to cuisine and timing.
 - Mise en place feasible: bowl sizes and grouping by cooking stage.
+- Texture goals intentional where they define the dish; method and sequence preserve them (e.g. crisp garnish at end).
+- Every major component has a clear role (flavor, texture, acid, balance); no redundant or orphaned elements.
 
 ---
 
@@ -121,6 +124,14 @@ Goal: know what to ask and where to find authoritative answers.
 **When:** Only after the recipe is saved (Protocol step 5).
 
 **Process:** Save first, then open the saved file and work through the checks below in order. They verify compliance with `_templates/recipe-formatting-requirements.md` and content/structure expectations. Fix issues; if edits are made, save and re-run from check 1 until the check passes.
+
+**Response to violations**
+
+- **Fix in the recipe:** Correct the recipe so it passes the failed check. Prefer the smallest change that fixes the violation (e.g. add missing doneness cues, fix a bowl reference, insert a tasting gate).
+- **Match fix to violation type:** Structure/step order → directions (and quote if arc changes). Ratios/amounts → ingredients and/or directions. Method → directions; if overall arc or vessel is wrong, update quote and Equipment too. Formatting → LaTeX in place per `recipe-formatting-requirements.md`. Flow/readability → wording in directions or Hints/Notes. Cross-section → align all affected sections (ingredients, directions, Equipment, Mise en Place). Completeness → add the missing content in the appropriate section. Technical → fix LaTeX/template.
+- **Preserve cross-section consistency:** After any fix, ensure ingredients list, directions, bowl refs, Equipment, and Mise en Place still agree. If you add a step or ingredient, update the others as needed.
+- **Re-run from check 1:** Once fixes are made, save and run the sanity check again from the top. Do not assume later checks still pass.
+- **When the fix would change agreed design:** If satisfying the check would contradict what the user agreed to (e.g. different yield, different method, different equipment), do not change the plan unilaterally. Report the violation and the options (e.g. “Ratio suggests 6 servings; you asked for 4—adjust quantities or note that portions are large?”) and get confirmation before editing.
 
 ### 1. Step structure and logical breaks
 
@@ -139,7 +150,35 @@ Goal: know what to ask and where to find authoritative answers.
 - **Bowl usage (per recipe-formatting-requirements):** Ingredients added together in the same step → one bowl. Single ingredients may or may not have a bowl; reserved liquids and items set aside get a bowl. Bowl size matches volume (small/medium/large as defined there).
 - Cookware capacity fits total volume with room for expansion/reduction.
 
-### 3. Formatting consistency
+### 3. Method validation (overall and per-task)
+
+Work through in order: first validate the overall cooking method, then each task that applies heat or significant technique.
+
+**3a. Overall cooking method**
+
+- **Arc of the recipe:** Identify the high-level sequence (e.g., prep → cook components → combine → bake/finish). Confirm it matches the dish type and the quote description.
+- **Heat and phase order:** Confirm that raw/sensitive steps (e.g., aromatics, fond, bloomed spices) come before wet/long-cook steps where appropriate; no step assumes an outcome that a prior step doesn’t produce.
+- **Temperature transitions:** Any “reduce oven to…” or “remove from heat then…” is correct for the next step (e.g., custard onto par-baked crust at lower temp). Stated temps support the intended transformations (browning, setting, melting, etc.).
+- **Timing and dependencies:** “While X bakes, prepare Y” and similar parallel work are feasible; time windows for combining (e.g., “pour onto hot crust”) are explicit and achievable.
+- **Yield and cookware:** Total volume and cooking times are plausible for the stated vessel sizes and heat transfer (no “bake 2 cups in a 12-inch skillet for 10 minutes” contradictions).
+
+**3b. Individual task methods**
+
+For each direction step that involves cooking or non-trivial technique:
+
+- **Technique fit:** The action matches the goal (e.g., sweat aromatics over moderate heat for tenderness, not high-heat browning unless intended; fold for delicate mixtures, stir for sturdier ones; bloom spices in fat before adding liquid when the recipe relies on that flavor).
+- **Heat and time:** Stated heat level and time range are realistic for the described result (e.g., “sauté until golden” with a time that allows browning; “simmer until reduced by half” with a duration that matches volume and vessel).
+- **Doneness alignment:** Doneness language matches the method (e.g., caramelized onions → golden/sweet/soft; set custard → temp and/or visual/tactile cues; crisp bacon → rendered fat, no pink). No generic “cook until done” without cues.
+- **Unforgiving steps:** Emulsions, custards, candy, proofing, or laminating have explicit parameters (temp, time, cues) and in-step recovery guidance where needed.
+- **Safety and doneness:** Any poultry, ground meat, or egg-heavy mixture that must reach a safe temp has a temperature cue (e.g., 165°F for poultry) or a clear proxy (e.g., “until no pink remains” with time/temp context).
+- **Fond and concentration:** Where fond or pan drippings exist, they are used (deglaze, incorporate); where reduction is critical, target is stated (nappé, coating, or volume).
+- **Resting and carryover:** Where resting or carryover materially affects outcome, it is stated (e.g. rest meat, let custard set).
+- **Tasting gates:** At key stages (e.g. after aromatics, after reduction, before serving), recipe directs taste and adjust seasoning where it matters.
+- **Repeatability:** Critical variables that would cause outcome variance are specified (e.g. pan diameter, weight for key ingredients where volume is unreliable).
+
+If any of 3a or 3b fails, fix the directions (and quote or equipment if the overall method or vessel is wrong); then re-run from check 1.
+
+### 4. Formatting consistency
 
 - Conform to `_templates/recipe-formatting-requirements.md`. In particular:
   - Directions and Hints/Notes: `\textbf{ingredients}`; `\textit{times, temperatures, bowl references}`; non-breaking space `~` before units and ingredients; °F for temperatures.
@@ -149,7 +188,7 @@ Goal: know what to ask and where to find authoritative answers.
   - Prep line: tasks separated by em-dashes (---).
   - Sections: all required (Ingredients, Directions, Equipment, Hints/Notes with subsections; quote description).
 
-### 4. Flow and readability
+### 5. Flow and readability
 
 - Natural language: a skilled cook guiding another, not technical docs.
 - Doneness integrated as descriptive clauses, not “if-then” conditionals.
@@ -159,7 +198,7 @@ Goal: know what to ask and where to find authoritative answers.
 - Avoid repetitive “check if” / “verify that.”
 - One clear statement per idea; no restating the same thing in different words in one step; no separate “The mixture is ready when…” that repeats what’s already in the step.
 
-### 5. Cross-section consistency
+### 6. Cross-section consistency
 
 - Every listed ingredient appears in directions (or is clearly optional).
 - Bowl assignments in prep line match directions.
@@ -168,7 +207,7 @@ Goal: know what to ask and where to find authoritative answers.
 - Hints/Notes add value and do not contradict directions.
 - Temperatures consistent throughout.
 
-### 6. Completeness
+### 7. Completeness
 
 - Required sections (per recipe-formatting-requirements): Title, quote description, ingredients, directions, equipment, hints/notes with subsections (Yield, Mise en Place, Ingredient Tips, Preparation Tips, Make Ahead & Storage, Serving Suggestions).
 - Quote: concise overview of main components and preparation.
@@ -177,8 +216,12 @@ Goal: know what to ask and where to find authoritative answers.
 - Unforgiving techniques have troubleshooting at decision points.
 - Time-sensitive steps have explicit timing or dependencies.
 - All cooking steps specify temperature or heat level.
+- Service window or peak moment indicated (when dish is at best, or how long it holds); where a component degrades quickly (crisp, heat), that is noted.
+- Resting stated where it materially affects result.
+- Taste and adjust at key stages (e.g. before adding dairy, before serving) where seasoning is decisive.
+- Where ingredient quality or seasonality materially affects the dish, it is noted (Ingredient Tips or quote).
 
-### 7. Technical accuracy
+### 8. Technical accuracy
 
 - LaTeX compiles without errors.
 - Template structure (document class, packages, layout) followed.
@@ -186,7 +229,7 @@ Goal: know what to ask and where to find authoritative answers.
 - `\newpage` used appropriately for extended sections.
 - Special characters escaped or via appropriate LaTeX commands.
 
-### 8. Final review questions
+### 9. Final review questions
 
 Before finalizing:
 
@@ -198,6 +241,8 @@ Before finalizing:
 6. Is the flow logical without jarring transitions?
 7. Is redundancy minimized (one best location per piece of information)?
 8. Bowl-combining: For steps that add multiple ingredients, are they in one bowl (not one per ingredient)?
+9. Texture and components: Where texture defines the dish, is it achieved and preserved? Does every major component have a clear role?
+10. Service and repeatability: Is peak moment or hold window clear? Are critical variables (pan size, weight where needed) specified? Is ingredient quality called out where it matters?
 
 ---
 
