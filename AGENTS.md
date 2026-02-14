@@ -207,8 +207,8 @@ Python scripts in `_tools/` build and compile recipes. Use them for verification
 
 | Use case | Command | Notes |
 |----------|---------|--------|
-| Single-recipe PDF | `python _tools/compile_recipes.py` | Compiles each `.tex` to PDF in place (incremental; only when `.tex` is newer than `.pdf`). Use `--force` to recompile all. |
+| Single-recipe PDF | `python _tools/compile_recipes.py` | The script has its own change-detection logic: it compiles only when a `.tex` is newer than its `.pdf` or the PDF is missing. Call it **without** `--force` so it decides what to compile. Do not use `--force`. |
 | Full cookbook | `python _tools/build.py` | Scan → extract → preprocess → compile → optional HTML. Output: `_build/book.pdf` (and `_build/html/book.html` if enabled). Config: `_tools/book.yml`. |
 | Pipeline (debug) | `scan.py`, `extract.py`, `preprocess.py`, `compile.py`, `html_export.py` | Run from `_tools/` with repo root as cwd. |
 
-After saving a new or modified recipe, suggest or run `compile_recipes.py` so the PDF is up to date; run `build.py` when the full book (TOC, combined PDF/HTML) needs refreshing.
+After saving a new or modified recipe, suggest or run `compile_recipes.py` so the PDF is up to date; run `build.py` when the full book (TOC, combined PDF/HTML) needs refreshing. `compile_recipes.py` uses built-in change detection (recompiles only when `.tex` is newer than `.pdf` or no PDF exists)—call it without `--force` and let it decide what needs compiling. Never use `--force`.
