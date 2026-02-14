@@ -152,25 +152,25 @@ Goal: know what to ask and where to find authoritative answers.
 
 ### 3. Method validation (overall and per-task)
 
-Work through in order: first validate the overall cooking method, then each task that applies heat or significant technique.
+Work through in order: first validate the overall cooking method, then each task that applies heat or significant technique. **Use the Research Protocol (web search) throughout:** validate arc, heat order, temperatures, timing, technique, and safety against authoritative sources (recipes, technique guides, cuisine standards, USDA/food-safety guidance); do not rely on the recipe’s own claims alone.
 
 **3a. Overall cooking method**
 
-- **Arc of the recipe:** Identify the high-level sequence (e.g., prep → cook components → combine → bake/finish). Confirm it matches the dish type and the quote description.
-- **Heat and phase order:** Confirm that raw/sensitive steps (e.g., aromatics, fond, bloomed spices) come before wet/long-cook steps where appropriate; no step assumes an outcome that a prior step doesn’t produce.
-- **Temperature transitions:** Any “reduce oven to…” or “remove from heat then…” is correct for the next step (e.g., custard onto par-baked crust at lower temp). Stated temps support the intended transformations (browning, setting, melting, etc.).
-- **Timing and dependencies:** “While X bakes, prepare Y” and similar parallel work are feasible; time windows for combining (e.g., “pour onto hot crust”) are explicit and achievable.
-- **Yield and cookware:** Total volume and cooking times are plausible for the stated vessel sizes and heat transfer (no “bake 2 cups in a 12-inch skillet for 10 minutes” contradictions).
+- **Arc of the recipe:** Identify the high-level sequence (e.g., prep → cook components → combine → bake/finish). Use research to validate that this sequence matches how the dish type is conventionally made (authoritative recipes, technique guides, or cuisine standards); do not rely only on the recipe’s own quote or description.
+- **Heat and phase order:** Confirm with research where needed that raw/sensitive steps (e.g., aromatics, fond, bloomed spices) come before wet/long-cook steps as appropriate for the dish; no step assumes an outcome that a prior step doesn’t produce.
+- **Temperature transitions:** Validate that any “reduce oven to…” or “remove from heat then…” is correct for the next step (e.g., custard onto par-baked crust at lower temp). Stated temps should align with research on intended transformations (browning, setting, melting, etc.).
+- **Timing and dependencies:** Confirm that “While X bakes, prepare Y” and similar parallel work are feasible (research typical times if unsure); time windows for combining (e.g., “pour onto hot crust”) are explicit and achievable.
+- **Yield and cookware:** Total volume and cooking times are plausible for the stated vessel sizes and heat transfer; use research on typical bake times and vessel capacity where needed (no “bake 2 cups in a 12-inch skillet for 10 minutes” contradictions).
 
 **3b. Individual task methods**
 
 For each direction step that involves cooking or non-trivial technique:
 
-- **Technique fit:** The action matches the goal (e.g., sweat aromatics over moderate heat for tenderness, not high-heat browning unless intended; fold for delicate mixtures, stir for sturdier ones; bloom spices in fat before adding liquid when the recipe relies on that flavor).
-- **Heat and time:** Stated heat level and time range are realistic for the described result (e.g., “sauté until golden” with a time that allows browning; “simmer until reduced by half” with a duration that matches volume and vessel).
+- **Technique fit:** The action matches the goal; validate against research when in doubt (e.g., sweat aromatics over moderate heat for tenderness, not high-heat browning unless intended; fold for delicate mixtures, stir for sturdier ones; bloom spices in fat before adding liquid when the recipe relies on that flavor).
+- **Heat and time:** Stated heat level and time range are realistic for the described result; check against established guidance where needed (e.g., “sauté until golden” with a time that allows browning; “simmer until reduced by half” with a duration that matches volume and vessel).
 - **Doneness alignment:** Doneness language matches the method (e.g., caramelized onions → golden/sweet/soft; set custard → temp and/or visual/tactile cues; crisp bacon → rendered fat, no pink). No generic “cook until done” without cues.
-- **Unforgiving steps:** Emulsions, custards, candy, proofing, or laminating have explicit parameters (temp, time, cues) and in-step recovery guidance where needed.
-- **Safety and doneness:** Any poultry, ground meat, or egg-heavy mixture that must reach a safe temp has a temperature cue (e.g., 165°F for poultry) or a clear proxy (e.g., “until no pink remains” with time/temp context).
+- **Unforgiving steps:** Emulsions, custards, candy, proofing, or laminating have explicit parameters (temp, time, cues) and in-step recovery guidance where needed; verify parameters against authoritative technique sources when critical.
+- **Safety and doneness:** Any poultry, ground meat, or egg-heavy mixture that must reach a safe temp has a temperature cue (e.g., 165°F for poultry per USDA) or a clear proxy; validate safe endpoints with current food-safety guidance.
 - **Fond and concentration:** Where fond or pan drippings exist, they are used (deglaze, incorporate); where reduction is critical, target is stated (nappé, coating, or volume).
 - **Resting and carryover:** Where resting or carryover materially affects outcome, it is stated (e.g. rest meat, let custard set).
 - **Tasting gates:** At key stages (e.g. after aromatics, after reduction, before serving), recipe directs taste and adjust seasoning where it matters.
