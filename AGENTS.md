@@ -197,6 +197,7 @@ If any of 3a or 3b fails, fix the directions (and quote or equipment if the over
 - Clear transitions between steps.
 - Avoid repetitive “check if” / “verify that.”
 - One clear statement per idea; no restating the same thing in different words in one step; no separate “The mixture is ready when…” that repeats what’s already in the step.
+- **Duplication check:** Scan each direction step for the same idea stated twice (e.g. doneness described in one sentence and restated in the next); consolidate or remove the duplicate. Also check for duplicated direction steps.
 
 ### 6. Cross-section consistency
 
