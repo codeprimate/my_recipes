@@ -89,10 +89,17 @@ class LaTeXToHTMLConverter:
         html = re.sub(r'\\subsection\*\{([^}]+)\}', r'<h4>\1</h4>', html)
         html = re.sub(r'\\subsection\{([^}]+)\}', r'<h4>\1</h4>', html)
         
-        # Convert enumerate environments first (before multicols, so nested lists work)
-        html = re.sub(r'\\begin\{enumerate\}(.*?)\\end\{enumerate\}', 
-                      lambda m: self._convert_enumerate(m.group(1)), 
-                      html, flags=re.DOTALL)
+        # Convert enumerate environments from inside out (innermost first, so nested substeps work)
+        # Match only blocks whose content does not contain another \begin{enumerate}
+        _enumerate_innermost_pat = re.compile(
+            r'\\begin\{enumerate\}((?:(?!\\begin\{enumerate\}).)*?)\\end\{enumerate\}',
+            re.DOTALL,
+        )
+        while True:
+            m = _enumerate_innermost_pat.search(html)
+            if not m:
+                break
+            html = html[: m.start()] + self._convert_enumerate(m.group(1)) + html[m.end() :]
         
         # Convert itemize environments (before multicols, so nested lists work)
         html = re.sub(r'\\begin\{itemize\}(.*?)\\end\{itemize\}', 
