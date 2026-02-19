@@ -85,12 +85,13 @@ For each recipe, reason through:
 
 1. **Transformations:** Chemical (browning/Maillard, caramelization, leavening, emulsification, fermentation); physical (protein denaturation, starch gelatinization, collagen breakdown, crystallization, foam); state (melting, solidifying, evaporation, reduction, gelling).
 2. **Conditions:** Temperature thresholds and ranges; time (especially slow transformations); moisture, pH, fat, ingredient interactions; mechanical action (kneading, whisking, folding, resting).
-3. **Flavor building:** Balance of salt, sweet, sour, bitter, umami for dish and cuisine; stages—base (aromatics, fond), middle (spices, herbs, liquids), finish (acid, fresh herbs, garnishes); fat/acid/salt roles; depth from caramelization, reduction, fermented ingredients, layered seasoning.
-4. **Spicing and seasoning:** Right stage (bloom in fat, infuse in liquid, finish raw); quantities proportional to volume (research cuisine/prep); balance of background warmth vs forward flavor; heat level and balance (fat, sweetness, dairy); aromatics appropriate to cuisine and timing.
-5. **Ratios:** Structural (flour–liquid, fat–flour, leavening–flour, hydration)—research formulas; sauce/braising (liquid to solids, reduction); seasoning (salt to protein, salt to liquid); flavor (acid–fat, sugar–acid); yield realistic for ingredient quantities.
-6. **Failure modes:** Likely failures for this dish type; sequencing, temperature, timing; ratio issues that undermine structure or flavor; unforgiving technique (emulsions, custards, bread, candy).
-7. **Realistic parameters:** Cooking times vs heat transfer for portion size and cookware; temperatures vs intended reactions; cookware capacity for volume plus expansion/reduction.
-8. **Texture:** Where texture defines the dish (crisp, creamy, tender, crunch), design for it; sequence and method should achieve or preserve intended contrasts.
+3. **Ingredient moisture (each step, food science):** At every cooking step, consider moisture: what is released or absorbed, how moisture affects the outcome (e.g. browning vs steaming, evaporation vs concentration), and how it influences texture and doneness. Apply food-science reasoning—water activity, evaporation rates, surface wetness and Maillard inhibition, starch gelatinization, protein denaturation in wet vs dry heat—so directions and doneness cues align with intended transformations.
+4. **Flavor building:** Balance of salt, sweet, sour, bitter, umami for dish and cuisine; stages—base (aromatics, fond), middle (spices, herbs, liquids), finish (acid, fresh herbs, garnishes); fat/acid/salt roles; depth from caramelization, reduction, fermented ingredients, layered seasoning.
+5. **Spicing and seasoning:** Right stage (bloom in fat, infuse in liquid, finish raw); quantities proportional to volume (research cuisine/prep); balance of background warmth vs forward flavor; heat level and balance (fat, sweetness, dairy); aromatics appropriate to cuisine and timing.
+6. **Ratios:** Structural (flour–liquid, fat–flour, leavening–flour, hydration)—research formulas; sauce/braising (liquid to solids, reduction); seasoning (salt to protein, salt to liquid); flavor (acid–fat, sugar–acid); yield realistic for ingredient quantities.
+7. **Failure modes:** Likely failures for this dish type; sequencing, temperature, timing; ratio issues that undermine structure or flavor; unforgiving technique (emulsions, custards, bread, candy).
+8. **Realistic parameters:** Cooking times vs heat transfer for portion size and cookware; temperatures vs intended reactions; cookware capacity for volume plus expansion/reduction.
+9. **Texture:** Where texture defines the dish (crisp, creamy, tender, crunch), design for it; sequence and method should achieve or preserve intended contrasts.
 
 ### Research Protocol
 
@@ -173,6 +174,7 @@ For each direction step that involves cooking or non-trivial technique:
 - **Safety and doneness:** Any poultry, ground meat, or egg-heavy mixture that must reach a safe temp has a temperature cue (e.g., 165°F for poultry per USDA) or a clear proxy; validate safe endpoints with current food-safety guidance.
 - **Fond and concentration:** Where fond or pan drippings exist, they are used (deglaze, incorporate); where reduction is critical, target is stated (nappé, coating, or volume).
 - **Resting and carryover:** Where resting or carryover materially affects outcome, it is stated (e.g. rest meat, let custard set).
+- **Ingredient moisture (food science):** For each step, consider whether moisture release, absorption, or evaporation matters: surface wetness vs browning, steaming vs dry heat, concentration vs dilution. Directions and doneness cues should reflect this (e.g. “cook until moisture is released” or “pat dry before searing” where it affects outcome).
 - **Tasting gates:** At key stages (e.g. after aromatics, after reduction, before serving), recipe directs taste and adjust seasoning where it matters.
 - **Repeatability:** Critical variables that would cause outcome variance are specified (e.g. pan diameter, weight for key ingredients where volume is unreliable).
 

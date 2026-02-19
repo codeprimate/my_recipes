@@ -358,6 +358,7 @@ Before finalizing a recipe, verify:
 
 - [ ] Quote description provides high-level overview of components and preparation method
 - [ ] Every cooking step includes doneness indicators (not just time)
+- [ ] Where ingredient moisture affects outcome (browning vs steaming, evaporation, concentration), directions consider it—e.g. surface dryness before searing, “cook until moisture is released,” or reduction targets—using food-science reasoning
 - [ ] Critical timing/sequence information is explicit
 - [ ] Unforgiving techniques have in-step warnings
 - [ ] Recovery instructions appear at decision points
