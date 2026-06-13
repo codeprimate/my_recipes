@@ -129,7 +129,7 @@ Goal: know what to ask and where to find authoritative answers.
 **Response to violations**
 
 - **Fix in the recipe:** Correct the recipe so it passes the failed check. Prefer the smallest change that fixes the violation (e.g. add missing doneness cues, fix a bowl reference, insert a tasting gate).
-- **Match fix to violation type:** Structure/step order → directions (and quote if arc changes). Ratios/amounts → ingredients and/or directions. Method → directions; if overall arc or vessel is wrong, update quote and Equipment too. Formatting → LaTeX in place per `recipe-formatting-requirements.md`. Flow/readability → wording in directions or Hints/Notes. Cross-section → align all affected sections (ingredients, directions, Equipment, Mise en Place). Completeness → add the missing content in the appropriate section. Technical → fix LaTeX/template.
+- **Match fix to violation type:** Structure/step order → directions (and quote if arc changes). Ratios/amounts → ingredients and/or directions. Method → directions; if overall arc or vessel is wrong, update quote and Equipment too. **Cook times** → directions (and Preparation Tips or Mise en Place when sequencing changes). Formatting → LaTeX in place per `recipe-formatting-requirements.md`. Flow/readability → wording in directions or Hints/Notes. Cross-section → align all affected sections (ingredients, directions, Equipment, Mise en Place). Completeness → add the missing content in the appropriate section. Technical → fix LaTeX/template.
 - **Preserve cross-section consistency:** After any fix, ensure ingredients list, directions, bowl refs, Equipment, and Mise en Place still agree. If you add a step or ingredient, update the others as needed.
 - **Re-run from check 1:** Once fixes are made, save and run the sanity check again from the top. Do not assume later checks still pass.
 - **When the fix would change agreed design:** If satisfying the check would contradict what the user agreed to (e.g. different yield, different method, different equipment), do not change the plan unilaterally. Report the violation and the options (e.g. “Ratio suggests 6 servings; you asked for 4—adjust quantities or note that portions are large?”) and get confirmation before editing.
@@ -169,6 +169,13 @@ For each direction step that involves cooking or non-trivial technique:
 
 - **Technique fit:** The action matches the goal; validate against research when in doubt (e.g., sweat aromatics over moderate heat for tenderness, not high-heat browning unless intended; fold for delicate mixtures, stir for sturdier ones; bloom spices in fat before adding liquid when the recipe relies on that flavor).
 - **Heat and time:** Stated heat level and time range are realistic for the described result; check against established guidance where needed (e.g., “sauté until golden” with a time that allows browning; “simmer until reduced by half” with a duration that matches volume and vessel).
+- **Cook time validation:** For every step that states a duration, confirm the time is plausible for the **ingredient quantity**, **heat level**, **vessel size**, and **intended doneness**—do not accept a time range just because it appears in the draft. Use the Research Protocol when uncertain.
+  - **Volume and crowding:** More food in the pan (or a crowded pot) needs longer, not the same time as a small batch. Scale time to stated amounts (e.g., 10~oz. mushrooms, 2 medium onions, a full Dutch oven of liquid).
+  - **Multi-phase steps:** High-moisture ingredients (mushrooms, leafy greens, raw vegetables) often have distinct phases—release moisture first, then brown or concentrate. The stated time must cover **all** phases, not only the final look (e.g., “deeply browned mushrooms” after only the evaporation window).
+  - **Doneness vs. duration:** If doneness language is ambitious (deeply browned, caramelized, reduced by half, fall-apart tender) but the time is short, flag the mismatch and extend the range or split the step.
+  - **Sensitive ingredients:** When one ingredient needs a long sweat or simmer (onion, aromatics) and another burns quickly (garlic, fresh herbs, dairy), sequence them—add the sensitive ingredient later with its own shorter time rather than sharing one optimistic total.
+  - **Parallel windows:** “While X cooks for \textit{N~minutes}, prepare Y” must be feasible; both tasks should finish within the stated window without rushing Y or leaving X underdone.
+  - **Fix pattern:** Extend the time range, name intermediate phases in the step (wet pan → dry pan), split ingredients across sub-steps, or add a recovery continuation (“Continue cooking for \textit{2--3~minutes}…”) when variance is high.
 - **Doneness alignment:** Doneness language matches the method (e.g., caramelized onions → golden/sweet/soft; set custard → temp and/or visual/tactile cues; crisp bacon → rendered fat, no pink). No generic “cook until done” without cues.
 - **Unforgiving steps:** Emulsions, custards, candy, proofing, or laminating have explicit parameters (temp, time, cues) and in-step recovery guidance where needed; verify parameters against authoritative technique sources when critical.
 - **Safety and doneness:** Any poultry, ground meat, or egg-heavy mixture that must reach a safe temp has a temperature cue (e.g., 165°F for poultry per USDA) or a clear proxy; validate safe endpoints with current food-safety guidance.
@@ -227,6 +234,7 @@ If any of 3a or 3b fails, fix the directions (and quote or equipment if the over
 ### 8. Technical accuracy
 
 - LaTeX compiles without errors.
+- **PDF output verified:** After compilation, confirm the PDF is not blank or a font-failure stub (see **Tools (Build & Compile)** — compile outside sandbox; check file size and spot-read title/ingredients).
 - Template structure (document class, packages, layout) followed.
 - No orphaned bowl, ingredient, or equipment references.
 - `\newpage` used appropriately for extended sections.
@@ -241,11 +249,12 @@ Before finalizing:
 3. Is information in the right place (execution in directions, context in extended)?
 4. Would I want to cook from this (clear, organized, confidence-building)?
 5. Are ratios believable for the stated yield?
-6. Is the flow logical without jarring transitions?
-7. Is redundancy minimized (one best location per piece of information)?
-8. Bowl-combining: For steps that add multiple ingredients, are they in one bowl (not one per ingredient)?
-9. Texture and components: Where texture defines the dish, is it achieved and preserved? Does every major component have a clear role?
-10. Service and repeatability: Is peak moment or hold window clear? Are critical variables (pan size, weight where needed) specified? Is ingredient quality called out where it matters?
+6. Are stated cook times believable for the ingredient amounts, heat level, vessel, and doneness described (including multi-phase steps like moisture release before browning)?
+7. Is the flow logical without jarring transitions?
+8. Is redundancy minimized (one best location per piece of information)?
+9. Bowl-combining: For steps that add multiple ingredients, are they in one bowl (not one per ingredient)?
+10. Texture and components: Where texture defines the dish, is it achieved and preserved? Does every major component have a clear role?
+11. Service and repeatability: Is peak moment or hold window clear? Are critical variables (pan size, weight where needed) specified? Is ingredient quality called out where it matters?
 
 ---
 
@@ -253,10 +262,12 @@ Before finalizing:
 
 Python scripts in `_tools/` build and compile recipes. Use them for verification and output; do not modify them when authoring.
 
+**Compile environment:** Recipe `.tex` files use `fontspec` with **Doves Type** (`\setmainfont{...}{Doves Type}`) and require **XeLaTeX** with that font installed on the host system. **Always run compile commands outside any sandbox** (request full/`all` permissions when an agent runs them). Sandboxed compiles often cannot load system fonts; `xelatex` may exit without a fatal error yet write a near-blank PDF (typically well under 5~KB for a full recipe). After compiling, verify the PDF is usable: file size should be in the normal range for other recipes in the repo (usually tens of KB), and title plus ingredients should be readable.
+
 | Use case | Command | Notes |
 |----------|---------|--------|
-| Single-recipe PDF | `python _tools/compile_recipes.py` | The script has its own change-detection logic: it compiles only when a `.tex` is newer than its `.pdf` or the PDF is missing. Call it **without** `--force` so it decides what to compile. Do not use `--force`. |
-| Full cookbook | `python _tools/build.py` | Scan → extract → preprocess → compile → optional HTML. Output: `_build/book.pdf` (and `_build/html/book.html` if enabled). Config: `_tools/book.yml`. |
-| Pipeline (debug) | `scan.py`, `extract.py`, `preprocess.py`, `compile.py`, `html_export.py` | Run from `_tools/` with repo root as cwd. |
+| Single-recipe PDF | `python _tools/compile_recipes.py` | The script has its own change-detection logic: it compiles only when a `.tex` is newer than its `.pdf` or the PDF is missing. Call it **without** `--force` so it decides what to compile. Do not use `--force`. **Run outside sandbox** so Doves Type is available. |
+| Full cookbook | `python _tools/build.py` | Scan → extract → preprocess → compile → optional HTML. Output: `_build/book.pdf` (and `_build/html/book.html` if enabled). Config: `_tools/book.yml`. **Run outside sandbox.** |
+| Pipeline (debug) | `scan.py`, `extract.py`, `preprocess.py`, `compile.py`, `html_export.py` | Run from `_tools/` with repo root as cwd. **Run outside sandbox** for any step that invokes `xelatex`. |
 
-After saving a new or modified recipe, suggest or run `compile_recipes.py` so the PDF is up to date; run `build.py` when the full book (TOC, combined PDF/HTML) needs refreshing. `compile_recipes.py` uses built-in change detection (recompiles only when `.tex` is newer than `.pdf` or no PDF exists)—call it without `--force` and let it decide what needs compiling. Never use `--force`.
+After saving a new or modified recipe, suggest or run `compile_recipes.py` so the PDF is up to date; run `build.py` when the full book (TOC, combined PDF/HTML) needs refreshing. `compile_recipes.py` uses built-in change detection (recompiles only when `.tex` is newer than `.pdf` or no PDF exists)—call it without `--force` and let it decide what needs compiling. Never use `--force`. If a compile reports success but the PDF looks blank or is suspiciously small, re-run **outside the sandbox** and re-check the output before treating the recipe as complete.

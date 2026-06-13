@@ -129,6 +129,7 @@ Use web search to validate ratios, spice quantities, temperatures, and technique
 - Step structure and logical breaks
 - Redundancy elimination
 - Ratio and amount verification
+- Method validation, including **cook time validation** (volume, multi-phase steps, doneness–duration match, sensitive-ingredient sequencing)
 - Formatting consistency
 - Flow and readability
 - Cross-section consistency
@@ -140,6 +141,7 @@ Use web search to validate ratios, spice quantities, temperatures, and technique
 Before finalizing, verify:
 - [ ] Quote description provides high-level overview of components and preparation method
 - [ ] Every cooking step includes doneness indicators (not just time)
+- [ ] Stated cook times are plausible for ingredient quantity, heat level, vessel, and intended doneness (including multi-phase steps)
 - [ ] Multi-modal verification (visual, tactile, temperature) provided
 - [ ] All fractions use `\nicefrac{numerator}{denominator}`
 - [ ] All ingredients in directions use `\textbf{}`
@@ -155,6 +157,7 @@ Before finalizing, verify:
 - [ ] No intra-step redundancy: each piece of information stated once, clearly
 - [ ] Multi-modal cues provide complementary information, not restatements
 - [ ] Complete sanity check performed (see AGENTS.md)
+- [ ] PDF compiled **outside sandbox** (Doves Type requires system font access) and output verified—not blank or stub-sized
 
 ## Enforcement
 
@@ -163,7 +166,8 @@ When editing or creating `.tex` recipe files:
 2. **ALWAYS** verify fractions use `\nicefrac{}` syntax
 3. **ALWAYS** ensure doneness indicators are co-located with actions
 4. **ALWAYS** validate recipe ratios and techniques using research
-5. **NEVER** deviate from the template's technical specifications without explicit user approval
+5. **ALWAYS** compile recipe PDFs outside any sandbox so **Doves Type** and other system fonts load; verify the PDF is readable after compile
+6. **NEVER** deviate from the template's technical specifications without explicit user approval
 
 ## Reference Files
 
