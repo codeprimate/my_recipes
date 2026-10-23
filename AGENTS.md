@@ -16,6 +16,11 @@ Follow this flow for every recipe. Complete each step before the next. Steps 2�
 |-------------|------------|
 | **New recipe** | Step 1 |
 | **Modify existing recipe** | Step 1a, then 2–7 (validate as needed in step 2) |
+| **Recipe sourced from a video** | Step 0 (`docs/CC-INGESTION.md`), then 1–7 |
+
+### Step 0 — Ingest the source (video-sourced recipes only)
+
+- Retrieve and flatten the caption track, and apply the source-fidelity rules, per `docs/CC-INGESTION.md`. Captions are research material and stay outside the repository; only the recipe `.tex` and `.pdf` are added.
 
 ### Step 1 — Discuss and agree (new recipe)
 
@@ -59,6 +64,7 @@ Follow this flow for every recipe. Complete each step before the next. Steps 2�
 
 - **Source of truth:** `_templates/recipe-formatting-requirements.md` — structure, syntax, layout, ingredients, directions, bowl references, quote description, extended sections (Equipment, Hints/Notes). Use when drafting/editing and when running Formatting Consistency and related sanity-check items.
 - **Templates:** `_templates/` (`.tex` files) for document class, packages, and page layout; sample recipes in category folders for idiomatic usage.
+- **Sourced recipes:** `docs/CC-INGESTION.md` — Step 0 caption retrieval and flattening, where research artifacts live, and the fidelity rules for reproducing a source.
 
 ---
 
@@ -269,5 +275,6 @@ Python scripts in `_tools/` build and compile recipes. Use them for verification
 | Single-recipe PDF | `python _tools/compile_recipes.py` | The script has its own change-detection logic: it compiles only when a `.tex` is newer than its `.pdf` or the PDF is missing. Call it **without** `--force` so it decides what to compile. Do not use `--force`. **Run outside sandbox** so Doves Type is available. |
 | Full cookbook | `python _tools/build.py` | Scan → extract → preprocess → compile → optional HTML. Output: `_build/book.pdf` (and `_build/html/book.html` if enabled). Config: `_tools/book.yml`. **Run outside sandbox.** |
 | Pipeline (debug) | `scan.py`, `extract.py`, `preprocess.py`, `compile.py`, `html_export.py` | Run from `_tools/` with repo root as cwd. **Run outside sandbox** for any step that invokes `xelatex`. |
+| Source captions from a video | `uv run _tools/fetch_cc.py <url> --slug <slug>` | **Sourcing, not building.** Writes to `/tmp` only — never into the repo. Prints the transcript path on stdout. See `docs/CC-INGESTION.md`. |
 
 After saving a new or modified recipe, suggest or run `compile_recipes.py` so the PDF is up to date; run `build.py` when the full book (TOC, combined PDF/HTML) needs refreshing. `compile_recipes.py` uses built-in change detection (recompiles only when `.tex` is newer than `.pdf` or no PDF exists)—call it without `--force` and let it decide what needs compiling. Never use `--force`. If a compile reports success but the PDF looks blank or is suspiciously small, re-run **outside the sandbox** and re-check the output before treating the recipe as complete.
